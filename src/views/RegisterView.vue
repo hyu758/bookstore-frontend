@@ -8,14 +8,6 @@ const fullName = ref("");
 const errorMessage = ref("");
 const register = async () => {
     errorMessage.value = "";
-    console.log(userName.value, email.value, password.value, fullName.value);
-    console.log("Dữ liệu gửi lên:", JSON.stringify({
-        username: userName.value,
-        password: password.value,
-        email: email.value,        
-        fullName: fullName.value,
-    }));
-
     try {
         const response = await fetch("http://localhost:8080/api/auth/register", {
             method: "POST",
@@ -29,11 +21,11 @@ const register = async () => {
                 fullName: fullName.value,
             }),
         });
+        console.log(response);
+        const data = await response.json();
         if (!response.ok){
             throw new Error(data.message || "Đăng ký thất bại, vui lòng thử lại.");
         }
-        console.log(data);
-        console.log("Đăng ký thành công");
         alert("Đăng ký thành công!");
         window.location.href = "/login";
     } catch (error) {
@@ -46,7 +38,7 @@ const register = async () => {
     <div class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
             <img class="mx-auto h-10 w-auto"
-                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" />
+            src="/src/assets/logo.png" alt="BookZen"/>
             <h2 class="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">Đăng ký</h2>
         </div>
 
