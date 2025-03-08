@@ -4,199 +4,249 @@
       <AdminSideBar></AdminSideBar>
   
       <!-- Main Content -->
-      <div class="flex-1 p-6 bg-gray-50">
+      <div class="flex-1 p-6 bg-gray-50 overflow-auto">
         <div class="max-w-4xl mx-auto">
-          <h2 class="text-2xl font-bold text-gray-800 mb-6">Thêm sách mới</h2>
-          <form @submit.prevent="createProduct" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Left Column -->
-            <div class="space-y-4">
-              <!-- Product Name -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tên sách</label>
-                <input
-                  v-model="product.name"
-                  type="text"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="Type book name"
-                  required
-                />
-              </div>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Thêm sách mới</h2>
+            <button
+              @click="router.go(-1)"
+              class="flex items-center text-gray-600 hover:text-gray-800"
+            >
+              <span class="material-icons mr-1">arrow_back</span>
+              Quay lại
+            </button>
+          </div>
   
-              <!-- Author -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tác giả</label>
-                <input
-                  v-model="product.author"
-                  type="text"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="Author name"
-                />
-              </div>
-  
-              <!-- Publisher -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nhà xuất bản</label>
-                <input
-                  v-model="product.publisher"
-                  type="text"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="Publisher name"
-                />
-              </div>
-  
-              <!-- Category -->
-              <div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
-    <div class="relative">
-      <!-- Hiển thị danh sách đã chọn hoặc placeholder -->
-      <div
-        @click="toggleDropdown"
-        class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-pointer"
-      >
-        <span v-if="selectedCategoryIds.length === 0">Chọn danh mục</span>
-        <span v-else>
-          {{ selectedCategoryIds.map(id => categories.find(cat => cat.id === id)?.name).join(", ") }}
-        </span>
-      </div>
-
-      <!-- Dropdown danh sách tùy chọn -->
-      <div
-        v-if="isOpen"
-        class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-40 overflow-y-auto"
-      >
-        <div
-          v-for="category in categories"
-          :key="category.id"
-          @click="toggleCategory(category.id)"
-          class="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
-          :class="{ 'bg-blue-100': selectedCategoryIds.includes(category.id) }"
-        >
-          <input
-            type="checkbox"
-            :checked="selectedCategoryIds.includes(category.id)"
-            class="mr-2"
-            @change="toggleCategory(category.id)"
-          />
-          {{ category.name }}
-        </div>
-      </div>
-    </div>
-  </div>
-  
-              <!-- Publication Year -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Năm xuất bản</label>
-                <input
-                  v-model.number="product.publicationYear"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="2025"
-                />
-              </div>
-  
-              <!-- Page Count -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Số trang</label>
-                <input
-                  v-model.number="product.pageCount"
-                  type="number"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="100"
-                />
-              </div>
-            </div>
-  
-            <!-- Right Column -->
-            <div class="space-y-4">
-              <!-- Price -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Giá</label>
-                <input
-                  v-model.number="product.price"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="$2999"
-                  required
-                />
-              </div>
-  
-              <!-- Discount -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mã giảm giá (%)</label>
-                <input
-                  v-model.number="product.discount"
-                  type="number"
-                  min="0"
-                  max="100"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="0"
-                />
-              </div>
-  
-              <!-- Stock Quantity -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng trong kho</label>
-                <input
-                  v-model.number="product.stockQuantity"
-                  type="number"
-                  class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                  placeholder="0"
-                  required
-                />
-              </div>
-  
-              <!-- Product Images -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Ảnh</label>
-                <div class="bg-gray-100 border border-dashed border-gray-300 rounded-lg p-4 text-center">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <form @submit.prevent="createProduct" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Left Column -->
+              <div class="space-y-4">
+                <!-- Product Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tên sách <span class="text-red-500">*</span></label>
                   <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    @change="handleFileUpload"
-                    class="hidden"
-                    id="images"
+                    v-model="product.name"
+                    type="text"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập tên sách"
+                    required
                   />
-                  <label for="images" class="cursor-pointer">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4H7z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v9m0-9l-3 3m3-3l3 3"></path>
-                    </svg>
-                    <p class="mt-1 text-sm text-gray-600">Click to upload or drag and drop (Max file size: 30MB)</p>
-                  </label>
                 </div>
-                <div v-if="previewImages.length > 0" class="mt-4 grid grid-cols-3 gap-4">
-                  <div v-for="(img, index) in previewImages" :key="index" class="relative">
-                    <img :src="img" alt="Preview" class="w-full h-32 object-cover rounded-md" />
-                    <button
-                      @click="removeImage(index)"
-                      class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+  
+                <!-- Author -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tác giả <span class="text-red-500">*</span></label>
+                  <input
+                    v-model="product.author"
+                    type="text"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập tên tác giả"
+                    required
+                  />
+                </div>
+  
+                <!-- Publisher -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nhà xuất bản</label>
+                  <input
+                    v-model="product.publisher"
+                    type="text"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập tên nhà xuất bản"
+                  />
+                </div>
+  
+                <!-- Category -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục <span class="text-red-500">*</span></label>
+                  <div class="relative">
+                    <div
+                      @click="toggleDropdown"
+                      class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-pointer"
                     >
-                      X
-                    </button>
+                      <span v-if="selectedCategoryIds.length === 0" class="text-gray-400">Chọn danh mục</span>
+                      <span v-else>
+                        {{ getSelectedCategoryNames() }}
+                      </span>
+                    </div>
+  
+                    <div
+                      v-if="isOpen"
+                      class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    >
+                      <div
+                        v-for="category in categories"
+                        :key="category.categoryId"
+                        class="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        @click="handleCategoryClick(category.categoryId)"
+                        :class="{ 'bg-blue-50': isCategorySelected(category.categoryId) }"
+                      >
+                        <div class="flex items-center w-full">
+                          <input
+                            type="checkbox"
+                            :id="'category-' + category.categoryId"
+                            :checked="isCategorySelected(category.categoryId)"
+                            @click.stop="handleCategoryClick(category.categoryId)"
+                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                          />
+                          <label :for="'category-' + category.categoryId" class="w-full cursor-pointer">
+                            {{ category.name }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
   
-            <!-- Description (Full Width) -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-              <textarea
-                v-model="product.description"
-                rows="4"
-                class="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-200 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Write product description here"
-              ></textarea>
-            </div>
-          </form>
+              <!-- Right Column -->
+              <div class="space-y-4">
+                <!-- Price -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Giá <span class="text-red-500">*</span></label>
+                  <input
+                    v-model.number="product.price"
+                    type="number"
+                    min="0"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập giá sách"
+                    required
+                  />
+                </div>
   
-          <!-- Submit Button -->
-          <div class="mt-6">
-            <button
-              @click="createProduct"
-              class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200"
-            >
-              Thêm sách
-            </button>
+                <!-- Discount -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Giảm giá (%)</label>
+                  <input
+                    v-model.number="product.discount"
+                    type="number"
+                    min="0"
+                    max="100"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập % giảm giá"
+                  />
+                </div>
+  
+                <!-- Stock Quantity -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Số lượng trong kho <span class="text-red-500">*</span></label>
+                  <input
+                    v-model.number="product.stockQuantity"
+                    type="number"
+                    min="0"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập số lượng"
+                    required
+                  />
+                </div>
+  
+                <!-- Publication Year -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Năm xuất bản</label>
+                  <input
+                    v-model.number="product.publicationYear"
+                    type="number"
+                    :max="new Date().getFullYear()"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập năm xuất bản"
+                  />
+                </div>
+  
+                <!-- Page Count -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Số trang</label>
+                  <input
+                    v-model.number="product.pageCount"
+                    type="number"
+                    min="1"
+                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Nhập số trang"
+                  />
+                </div>
+              </div>
+  
+              <!-- Description (Full Width) -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                <textarea
+                  v-model="product.description"
+                  rows="4"
+                  class="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nhập mô tả sách"
+                ></textarea>
+              </div>
+  
+              <!-- Product Images (Full Width) -->
+              <div class="md:col-span-2 space-y-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Hình ảnh sản phẩm
+                  <span class="text-sm text-gray-500">
+                    (Tối đa {{ maxFiles }} ảnh, mỗi ảnh không quá 30MB)
+                  </span>
+                </label>
+                
+                <div 
+                  class="border-2 border-dashed border-gray-300 rounded-lg p-8 transition-colors duration-200 ease-in-out hover:border-blue-400"
+                  @dragover.prevent
+                  @drop.prevent="handleFileDrop"
+                >
+                  <div class="text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      @change="handleFileUpload"
+                      class="hidden"
+                      id="images"
+                    />
+                    <label for="images" class="cursor-pointer block p-4">
+                      <span class="material-icons text-6xl text-gray-400 mb-4">cloud_upload</span>
+                      <p class="text-base text-gray-600 mb-2">
+                        Kéo thả ảnh vào đây hoặc click để chọn
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        Hỗ trợ: JPG, PNG, GIF, WEBP
+                      </p>
+                    </label>
+                  </div>
+                </div>
+  
+                <!-- Image Previews -->
+                <div v-if="previewImages.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div
+                    v-for="(img, index) in previewImages"
+                    :key="index"
+                    class="relative group"
+                  >
+                    <img
+                      :src="img.url"
+                      :alt="img.name"
+                      class="w-full h-48 object-cover rounded-lg shadow-sm"
+                    />
+                    <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                      <button
+                        @click="removeImage(index)"
+                        class="text-white bg-red-600 p-2 rounded-full hover:bg-red-700 transition-colors"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+  
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end">
+              <button
+                @click="createProduct"
+                class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
+                :disabled="!product.name || !product.author || selectedCategoryIds.length === 0"
+              >
+                <span class="material-icons">save</span>
+                <span>Lưu sách</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -204,14 +254,18 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from "vue";
+  import { ref, onMounted, watch } from "vue";
   import { useRouter } from "vue-router";
-  import axios from "axios";
+  import { useAuth } from "@/composables/useAuth";
+  import { useApi } from "@/composables/useApi";
   import AdminSideBar from "@/components/AdminSideBar.vue";
+  
+  const router = useRouter();
+  const { checkAdminRole } = useAuth();
+  const api = useApi();
   
   // Khai báo dữ liệu reactive
   const product = ref({
-    productId: 0,
     name: "",
     description: "",
     price: 0,
@@ -220,113 +274,157 @@
     realPrice: 0,
     author: "",
     publisher: "",
-    publicationYear: 0,
+    publicationYear: new Date().getFullYear(),
     pageCount: 0,
     categoryIds: [],
-    imageUrls: [],
+    imageUrls: []
   });
+  
   const selectedCategoryIds = ref([]);
   const categories = ref([]);
+  const isOpen = ref(false);
+  
+  // State cho xử lý ảnh
   const previewImages = ref([]);
   const selectedFiles = ref([]);
-  const router = useRouter();
+  const maxFileSize = 30 * 1024 * 1024; // 30MB
+  const maxFiles = 5; // Số lượng ảnh tối đa
+  const acceptedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   
   // Lấy danh sách danh mục từ API
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:8080/api/categories", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      categories.value = response.data.content; // Giả sử response trả về [{id, name}, ...]
+      const response = await api.fetchCategories(0, 100); // Lấy tất cả danh mục
+      categories.value = response.content;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách danh mục:", error);
     }
   };
-  const toggleCategory = (id) => {
-  if (selectedCategoryIds.value.includes(id)) {
-    selectedCategoryIds.value = selectedCategoryIds.value.filter((catId) => catId !== id);
-  } else {
-    selectedCategoryIds.value.push(id);
-  }
-};
+  
+  // Theo dõi thay đổi của selectedCategoryIds
+  watch(selectedCategoryIds, (newIds) => {
+    product.value.categoryIds = [...newIds];
+  }, { deep: true });
+  
+  // Xử lý dropdown danh mục
   const toggleDropdown = () => {
-  isOpen.value = !isOpen;
-};
-  // Xử lý khi chọn file ảnh
+    isOpen.value = !isOpen.value;
+  };
+  
+  // Hàm kiểm tra xem một danh mục có được chọn hay không
+  const isCategorySelected = (id) => {
+    return selectedCategoryIds.value.includes(id);
+  };
+  
+  // Hàm lấy tên của các danh mục được chọn
+  const getSelectedCategoryNames = () => {
+    return selectedCategoryIds.value
+      .map(id => categories.value.find(cat => cat.categoryId === id)?.name)
+      .filter(name => name)
+      .join(", ");
+  };
+  
+  // Xử lý click vào danh mục
+  const handleCategoryClick = (id) => {
+    console.log("Clicking category:", id);
+    const index = selectedCategoryIds.value.findIndex(catId => catId === id);
+    if (index === -1) {
+      // Nếu chưa có trong mảng thì thêm vào
+      selectedCategoryIds.value.push(id);
+    } else {
+      // Nếu đã có trong mảng thì xóa đi
+      selectedCategoryIds.value.splice(index, 1);
+    }
+    // Cập nhật product.categoryIds
+    product.value.categoryIds = [...selectedCategoryIds.value];
+    console.log("Selected categories after change:", selectedCategoryIds.value);
+    // Để đảm bảo sự kiện không nổi bọt lên cha
+    event.stopPropagation();
+  };
+  
+  // Thêm hàm xử lý kéo thả
+  const handleFileDrop = (event) => {
+    const files = Array.from(event.dataTransfer.files);
+    processFiles(files);
+  };
+  
+  // Cập nhật hàm handleFileUpload để sử dụng hàm chung
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    selectedFiles.value = files;
-    previewImages.value = [];
-    product.value.imageUrls = [];
+    processFiles(files);
+  };
   
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64String = e.target.result;
-        previewImages.value.push(base64String);
+  // Hàm xử lý chung cho cả kéo thả và chọn file
+  const processFiles = async (files) => {
+    // Kiểm tra số lượng file
+    if (previewImages.value.length + files.length > maxFiles) {
+      alert(`Bạn chỉ có thể upload tối đa ${maxFiles} ảnh`);
+      return;
+    }
+  
+    for (const file of files) {
+      // Kiểm tra loại file
+      if (!acceptedFileTypes.includes(file.type)) {
+        alert(`File ${file.name} không phải là ảnh hợp lệ`);
+        continue;
+      }
+  
+      // Kiểm tra kích thước file
+      if (file.size > maxFileSize) {
+        alert(`File ${file.name} vượt quá kích thước cho phép (30MB)`);
+        continue;
+      }
+  
+      try {
+        const base64String = await convertFileToBase64(file);
+        previewImages.value.push({
+          url: base64String,
+          name: file.name
+        });
         product.value.imageUrls.push(base64String);
-      };
+      } catch (error) {
+        console.error("Lỗi khi xử lý file:", error);
+      }
+    }
+  };
+  
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
       reader.readAsDataURL(file);
     });
   };
   
-  // Xóa ảnh khỏi danh sách xem trước
+  // Xóa ảnh
   const removeImage = (index) => {
     previewImages.value.splice(index, 1);
     product.value.imageUrls.splice(index, 1);
-    selectedFiles.value.splice(index, 1);
   };
   
   // Tạo sản phẩm mới
   const createProduct = async () => {
-    product.value.categoryIds = selectedCategoryIds.value;
-    product.value.realPrice = product.value.price * (1 - (product.value.discount || 0) / 100);
-  
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.post("http://localhost:8080/api/products", product.value, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // Cập nhật categoryIds và tính realPrice
+      product.value.categoryIds = selectedCategoryIds.value;
+      product.value.realPrice = product.value.price * (1 - (product.value.discount || 0) / 100);
   
-      if (response.data.success) {
-        alert("Thêm sản phẩm thành công!");
-        router.push("/admin/products");
-      }
+      // Gọi API tạo sản phẩm
+      await api.createProduct(product.value);
+      alert("Thêm sách thành công!");
+      router.push("/admin/products");
     } catch (error) {
-      console.error("Lỗi khi thêm sản phẩm:", error);
-      alert("Thêm sản phẩm thất bại!");
+      console.error("Lỗi khi thêm sách:", error);
+      alert("Thêm sách thất bại! " + error.message);
     }
   };
   
   // Kiểm tra quyền admin khi vào trang
   onMounted(async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-  
-    try {
-      const response = await axios.get("http://localhost:8080/api/auth/role", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "*/*",
-        },
-      });
-      if (response.data.data !== "ADMIN") {
-        router.push("/");
-      } else {
-        fetchCategories(); // Lấy danh mục sau khi xác nhận quyền admin
-      }
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra quyền:", error);
-      router.push("/login");
+    const isAdmin = await checkAdminRole();
+    if (isAdmin) {
+      fetchCategories();
     }
   });
   </script>
@@ -341,5 +439,18 @@
   }
   .hover:bg-blue-700:hover {
     background-color: #1d4ed8; /* Màu xanh đậm hơn khi hover */
+  }
+  /* Thêm styles cho drag & drop */
+  .border-dashed {
+    border-style: dashed;
+  }
+  
+  .border-2 {
+    border-width: 2px;
+  }
+  
+  /* Hiệu ứng hover cho vùng kéo thả */
+  .hover\:border-blue-400:hover {
+    border-color: #60a5fa;
   }
   </style>

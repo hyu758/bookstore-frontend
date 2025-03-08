@@ -81,7 +81,6 @@
   import { ref, onMounted } from "vue";
   import { useRouter } from "vue-router";
   import axios from "axios";
-  import AdminSideBar from "@/components/AdminSideBar.vue";
   
   // Khai báo dữ liệu reactive
   const profile = ref({
@@ -111,8 +110,9 @@
         },
       });
   
+      console.log(response.data);
       if (response.data.success) {
-        profile.value = response.data.data; // Giả sử API trả về dữ liệu trong response.data.data
+        profile.value = response.data.data;
       } else {
         errorMessage.value = "Không thể lấy thông tin hồ sơ.";
       }

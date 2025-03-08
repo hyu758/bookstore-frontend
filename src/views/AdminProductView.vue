@@ -1,137 +1,236 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
     <AdminSideBar></AdminSideBar>
 
     <!-- Main Content -->
-    <div class="flex-1 p-6 bg-gray-100">
+    <div class="flex-1 p-8 overflow-auto">
       <!-- Quản lý danh mục -->
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">Quản lý danh mục</h2>
-        <div class="bg-white p-4 rounded-lg shadow-md">
-          <div class="mb-4">
-            <RouterLink
-              to="/admin/products/addCategory"
-              class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
-            >
-              Thêm danh mục
-            </RouterLink>
-          </div>
+      <div class="mb-10">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Quản lý danh mục</h2>
+          <RouterLink
+            to="/admin/products/addCategory"
+            class="bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 transition duration-200 flex items-center space-x-2"
+          >
+            <span class="material-icons text-xl">add</span>
+            <span>Thêm danh mục</span>
+          </RouterLink>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
           <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
               <thead>
-                <tr class="bg-gray-800 text-white">
-                  <th class="py-2 px-4 border-b">ID</th>
-                  <th class="py-2 px-4 border-b">Tên danh mục</th>
-                  <th class="py-2 px-4 border-b"></th>
+                <tr class="bg-gray-50">
+                  <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Tên danh mục</th>
+                  <th class="px-6 py-4 text-right text-sm font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="category in categories" :key="category.id" class="hover:bg-gray-50">
-                  <td class="py-2 px-4 border-b">{{ category.id }}</td>
-                  <td class="py-2 px-4 border-b">{{ category.name }}</td>
-                  <td class="py-2 px-4 border-b">
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="category in categories" :key="category.id" class="hover:bg-gray-50 transition duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.categoryId }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       @click="deleteCategory(category.id)"
-                      class="bg-red-600 text-white py-1 px-2 rounded hover:bg-red-700"
+                      class="text-red-600 hover:text-red-800 transition duration-150 flex items-center space-x-1 ml-auto"
                     >
-                      Xóa
+                      <span class="material-icons text-sm">delete</span>
+                      <span>Xóa</span>
                     </button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          
+          <!-- Phân trang cho danh mục -->
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+              Hiển thị {{ categories.length }} / {{ categoryPagination.totalElements }} danh mục
+            </div>
+            <div class="flex items-center space-x-4">
+              <button 
+                @click="changeCategoryPage(categoryPagination.currentPage - 1)"
+                :disabled="categoryPagination.currentPage === 0"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="material-icons text-sm mr-1">chevron_left</span>
+                Trước
+              </button>
+              <span class="text-sm text-gray-700">
+                Trang {{ categoryPagination.currentPage + 1 }} / {{ categoryPagination.totalPages }}
+              </span>
+              <button 
+                @click="changeCategoryPage(categoryPagination.currentPage + 1)"
+                :disabled="categoryPagination.currentPage === categoryPagination.totalPages - 1"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau
+                <span class="material-icons text-sm ml-1">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Quản lý sản phẩm -->
       <div>
-        <h2 class="text-2xl font-bold mb-4">Quản lý sách</h2>
-        <div class="mb-4">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Quản lý sách</h2>
           <RouterLink
             to="/admin/products/add"
-            class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+            class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center space-x-2"
           >
-            Thêm sách
+            <span class="material-icons text-xl">add</span>
+            <span>Thêm sách</span>
           </RouterLink>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr class="bg-gray-800 text-white">
-                <th class="py-2 px-4 border-b">ID</th>
-                <th class="py-2 px-4 border-b">TÊN SÁCH</th>
-                <th class="py-2 px-4 border-b">GIÁ</th>
-                <th class="py-2 px-4 border-b">GIẢM GIÁ</th>
-                <th class="py-2 px-4 border-b">SỐ LƯỢNG ĐÃ BÁN</th>
-                <th class="py-2 px-4 border-b">SỐ LƯỢNG TỒN KHO</th>
-                <th class="py-2 px-4 border-b">DANH MỤC</th>
-                <th class="py-2 px-4 border-b">TÁC GIẢ</th>
-                <th class="py-2 px-4 border-b">CẬP NHẬT LÚC</th>
-                <th class="py-2 px-4 border-b"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50">
-                <td class="py-2 px-4 border-b">{{ product.id }}</td>
-                <td class="py-2 px-4 border-b">{{ product.name }}</td>
-                <td class="py-2 px-4 border-b">{{ product.price }}</td>
-                <td class="py-2 px-4 border-b">{{ product.discount }}</td>
-                <td class="py-2 px-4 border-b">{{ product.soldQuantity }}</td>
-                <td class="py-2 px-4 border-b">{{ product.stockQuantity }}</td>
-                <td class="py-2 px-4 border-b">{{ product.category }}</td>
-                <td class="py-2 px-4 border-b">{{ product.author }}</td>
-                <td class="py-2 px-4 border-b">{{ product.updatedAt }}</td>
-                <td class="py-2 px-4 border-b flex space-x-2">
-                  <button
-                    @click="editProduct(product.id)"
-                    class="bg-blue-600 text-white py-1 px-2 rounded hover:bg-blue-700"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    @click="deleteProduct(product.id)"
-                    class="bg-red-600 text-white py-1 px-2 rounded hover:bg-red-700"
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Phân trang -->
-        <div class="mt-4 flex justify-center space-x-2">
-          <button class="bg-gray-500 text-white py-1 px-3 rounded hover:bg-gray-600">Trước</button>
-          <span>Trang 1</span>
-          <button class="bg-gray-500 text-white py-1 px-3 rounded hover:bg-gray-600">Sau</button>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sách</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giảm giá</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đã bán</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cập nhật</th>
+                  <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50 transition duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.id }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.price.toLocaleString('vi-VN') }}₫</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.discount }}%</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.soldQuantity }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.stockQuantity }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.category }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.author }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.updatedAt }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end space-x-3">
+                      <button
+                        @click="editProduct(product.id)"
+                        class="text-blue-600 hover:text-blue-800 transition duration-150 flex items-center space-x-1"
+                      >
+                        <span class="material-icons text-sm">edit</span>
+                        <span>Sửa</span>
+                      </button>
+                      <button
+                        @click="deleteProduct(product.id)"
+                        class="text-red-600 hover:text-red-800 transition duration-150 flex items-center space-x-1"
+                      >
+                        <span class="material-icons text-sm">delete</span>
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang cho sản phẩm -->
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+              Hiển thị {{ products.length }} / {{ productPagination.totalElements }} sách
+            </div>
+            <div class="flex items-center space-x-4">
+              <button 
+                @click="changeProductPage(productPagination.currentPage - 1)"
+                :disabled="productPagination.currentPage === 0"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="material-icons text-sm mr-1">chevron_left</span>
+                Trước
+              </button>
+              <span class="text-sm text-gray-700">
+                Trang {{ productPagination.currentPage + 1 }} / {{ productPagination.totalPages }}
+              </span>
+              <button 
+                @click="changeProductPage(productPagination.currentPage + 1)"
+                :disabled="productPagination.currentPage === productPagination.totalPages - 1"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau
+                <span class="material-icons text-sm ml-1">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      :show="showConfirmDialog"
+      :title="confirmDialogConfig.title"
+      :message="confirmDialogConfig.message"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
 import AdminSideBar from "@/components/AdminSideBar.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import { useAuth } from "@/composables/useAuth";
+import { useApi } from "@/composables/useApi";
+
+const router = useRouter();
+const { checkAdminRole } = useAuth();
+const api = useApi();
 
 const products = ref([]);
 const categories = ref([]);
-const router = useRouter();
 
-// Lấy danh sách danh mục từ API
+// State cho confirm dialog
+const showConfirmDialog = ref(false);
+const confirmDialogConfig = ref({
+  title: '',
+  message: '',
+  callback: null,
+  type: ''
+});
+
+// State quản lý phân trang
+const categoryPagination = ref({
+  currentPage: 0,
+  totalPages: 0,
+  totalElements: 0,
+  size: 4
+});
+
+const productPagination = ref({
+  currentPage: 0,
+  totalPages: 0,
+  totalElements: 0,
+  size: 10
+});
+
+// Lấy danh sách danh mục từ API với phân trang
 const fetchCategories = async () => {
   try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axios.get("http://localhost:8080/api/categories", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    categories.value = response.data;
+    const data = await api.fetchCategories(
+      categoryPagination.value.currentPage,
+      categoryPagination.value.size,
+    );
+    categories.value = data.content;
+    categoryPagination.value.totalPages = data.totalPages;
+    categoryPagination.value.totalElements = data.totalElements;
   } catch (error) {
     console.error("Lỗi khi lấy danh sách danh mục:", error);
   }
@@ -139,33 +238,50 @@ const fetchCategories = async () => {
 
 // Xóa danh mục
 const deleteCategory = async (id) => {
-  if (confirm("Bạn có chắc muốn xóa danh mục này?")) {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`http://localhost:8080/api/categories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchCategories(); // Làm mới danh sách danh mục
-    } catch (error) {
-      console.error("Lỗi khi xóa danh mục:", error);
-    }
+  confirmDialogConfig.value = {
+    title: 'Xác nhận xóa danh mục',
+    message: 'Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác.',
+    callback: async () => {
+      try {
+        await api.deleteCategory(id);
+        fetchCategories();
+      } catch (error) {
+        console.error("Lỗi khi xóa danh mục:", error);
+      }
+    },
+    type: 'category'
+  };
+  showConfirmDialog.value = true;
+};
+
+// Lấy danh sách sản phẩm từ API với phân trang
+const fetchProducts = async () => {
+  try {
+    const data = await api.fetchProducts(
+      productPagination.value.currentPage,
+      productPagination.value.size
+    );
+    products.value = data.content;
+    productPagination.value.totalPages = data.totalPages;
+    productPagination.value.totalElements = data.totalElements;
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách sách:", error);
   }
 };
 
-// Lấy danh sách sản phẩm từ API
-const fetchProducts = async () => {
-  try {
-    const token = localStorage.getItem("accessToken");
-    const response = await axios.get("http://localhost:8080/api/products", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    products.value = response.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy danh sách sách:", error);
+// Hàm điều hướng trang cho danh mục
+const changeCategoryPage = (page) => {
+  if (page >= 0 && page < categoryPagination.value.totalPages) {
+    categoryPagination.value.currentPage = page;
+    fetchCategories();
+  }
+};
+
+// Hàm điều hướng trang cho sản phẩm
+const changeProductPage = (page) => {
+  if (page >= 0 && page < productPagination.value.totalPages) {
+    productPagination.value.currentPage = page;
+    fetchProducts();
   }
 };
 
@@ -176,46 +292,40 @@ const editProduct = (id) => {
 
 // Xóa sản phẩm
 const deleteProduct = async (id) => {
-  if (confirm("Bạn có chắc muốn xóa sách này?")) {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await axios.delete(`http://localhost:8080/api/products/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchProducts(); // Làm mới danh sách
-    } catch (error) {
-      console.error("Lỗi khi xóa sách:", error);
-    }
+  confirmDialogConfig.value = {
+    title: 'Xác nhận xóa sách',
+    message: 'Bạn có chắc chắn muốn xóa sách này không? Hành động này không thể hoàn tác.',
+    callback: async () => {
+      try {
+        await api.deleteProduct(id);
+        fetchProducts();
+      } catch (error) {
+        console.error("Lỗi khi xóa sách:", error);
+      }
+    },
+    type: 'product'
+  };
+  showConfirmDialog.value = true;
+};
+
+// Xử lý sự kiện từ confirm dialog
+const handleConfirm = () => {
+  if (confirmDialogConfig.value.callback) {
+    confirmDialogConfig.value.callback();
   }
+  showConfirmDialog.value = false;
+};
+
+const handleCancel = () => {
+  showConfirmDialog.value = false;
 };
 
 // Kiểm tra quyền admin khi vào trang
 onMounted(async () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    router.push("/login");
-    return;
-  }
-
-  try {
-    const response = await axios.get("http://localhost:8080/api/auth/role", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "*/*",
-      },
-    });
-    if (response.data.data !== "ADMIN") {
-      alert("Bạn không có quyền truy cập!");
-      router.push("/");
-    } else {
-      fetchCategories();
-      fetchProducts();
-    }
-  } catch (error) {
-    console.error("Lỗi khi kiểm tra quyền:", error);
-    router.push("/login");
+  const isAdmin = await checkAdminRole();
+  if (isAdmin) {
+    fetchCategories();
+    fetchProducts();
   }
 });
 </script>
