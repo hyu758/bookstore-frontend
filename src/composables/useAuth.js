@@ -45,7 +45,10 @@ export const useAuth = () => {
       return false;
     }
   };
-
+  const removeToken = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+  };
   const getAuthHeaders = () => {
     return {
       Authorization: `Bearer ${token.value}`,
@@ -57,6 +60,7 @@ export const useAuth = () => {
     getToken,
     setToken,
     checkAdminRole,
-    getAuthHeaders
+    getAuthHeaders,
+    removeToken
   };
 }; 

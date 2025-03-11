@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
+  <div @click="goToDetail" class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group cursor-pointer">
     <!-- Ảnh sách và badge (nếu có) -->
     <div class="relative">
       <img :src="book.imageUrls[0]" :alt="book.name" 
@@ -71,7 +71,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const props = defineProps({
   book: {
     type: Object,
@@ -102,6 +104,13 @@ const isNewBook = computed(() => {
 
 // Emit event khi click nút thêm vào giỏ
 defineEmits(['addToCart']);
+
+const goToDetail = () => {
+  router.push({
+    name: 'product-detail',
+    params: { id: props.book.productId }
+  });
+};
 </script>
 
 <style scoped>

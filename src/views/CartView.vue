@@ -163,23 +163,6 @@
               </div>
             </div>
 
-            <!-- Mã giảm giá -->
-            <div class="flex gap-2 mb-6">
-              <input 
-                type="text" 
-                v-model="couponCode"
-                placeholder="Nhập mã giảm giá" 
-                class="flex-1 border-gray-300 rounded-md"
-              >
-              <button 
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                :disabled="!couponCode"
-                @click="applyCoupon"
-              >
-                Áp dụng
-              </button>
-            </div>
-
             <!-- Nút đặt hàng -->
             <button 
               class="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -271,7 +254,14 @@ const saveChanges = async () => {
     
     await Promise.all(
       updates.map(update => 
-        api.put(`/api/cart/${update.productId}`, { quantity: update.quantity })
+        fetch(`http://localhost:8080/api/cart/items/${update.productId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ quantity: update.quantity })
+        })
       )
     );
     
@@ -287,8 +277,16 @@ onBeforeUnmount(saveChanges);
 const removeFromCart = async (item) => {
   if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
     try {
-      await api.delete(`/api/cart/${item.productId}`);
-      cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
+      const response = await fetch(`http://localhost:8080/api/cart/items/${item.productId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
+      }
     } catch (error) {
       console.error('Lỗi khi xóa sản phẩm:', error);
     }
@@ -316,12 +314,23 @@ const checkout = async () => {
         productId: item.productId,
         quantity: item.quantity
       })),
-      address: userAddress.value,
-      couponCode: couponCode.value || undefined
+      address: userAddress.value
     };
     
-    await api.post('/api/orders', orderData);
-    router.push('/checkout');
+    const response = await fetch('http://localhost:8080/api/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    if (response.ok) {
+      router.push('/checkout');
+    } else {
+      throw new Error('Lỗi khi tạo đơn hàng');
+    }
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng:', error);
     alert('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.');
@@ -332,8 +341,15 @@ const checkout = async () => {
 const fetchUserAddress = async () => {
   try {
     isLoadingAddress.value = true;
-    const response = await api.get('/api/users/profile');
-    userAddress.value = response.data.address;
+    const response = await fetch('http://localhost:8080/api/users/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log(response)
+    // userAddress.value = response.data.address;
   } catch (error) {
     console.error('Lỗi khi lấy thông tin địa chỉ:', error);
   } finally {
@@ -345,11 +361,24 @@ const fetchUserAddress = async () => {
 const fetchCart = async () => {
   try {
     isLoadingCart.value = true;
-    const response = await api.get('/api/cart');
-    cartItems.value = response.data.map(item => ({
-      ...item,
-      selected: true // Thêm trường selected cho chức năng chọn sản phẩm
-    }));
+    const response = await fetch('http://localhost:8080/api/cart', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        Accept: "*/*"
+      }
+    });
+    const result = await response.json();
+    if (result.success) {
+      cartItems.value = result.data.cartDetails.map(item => ({
+        cartDetailId: item.cartDetailId,
+        productId: item.productId,
+        name: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+        selected: true
+      }));
+    }
   } catch (error) {
     console.error('Lỗi khi lấy thông tin giỏ hàng:', error);
   } finally {

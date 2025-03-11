@@ -161,6 +161,7 @@
   onMounted(async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
+      
       router.push("/login");
       return;
     }

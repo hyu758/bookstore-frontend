@@ -1,11 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useNotify } from '@/composables/notify';
+import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
 
 const username = ref("");
 const password = ref("");
-const errorMessage = ref("");
+const router = useRouter();
+const { error: showError, success } = useNotify();
+
 const login = async () => {
-    errorMessage.value = "";
     try {
         const response = await fetch("http://localhost:8080/api/auth/login", {
             method: "POST",
@@ -18,24 +22,28 @@ const login = async () => {
             }),
         });
 
-        if (!response.ok) {
-            throw new Error("Sai email hoặc mật khẩu");
+        const data = await response.json();
+        console.log(data);
+        if (data.error) {
+            showError(data.error);
+            return;
         }
 
-        const data = await response.json();
-        console.log("Đăng nhập thành công!", data);
-        if (data) {
-            localStorage.setItem("accessToken", data.accessToken);
-            localStorage.setItem("refreshToken", data.refreshToken);
-            window.location.href = "/";
-        }
-        
-        
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+
+        success('Đăng nhập thành công!');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        window.location.href = '/';
 
     } catch (error) {
-        errorMessage.value = error.message;
+        showError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
     }
 };
+
+onMounted(() => {
+    const {setToken} = useAuth();
+})
 </script>
 
 <template>

@@ -99,7 +99,7 @@ const fetchCategories = async () => {
 const fetchTopProducts = async () => {
   try {
     const response = await api.fetchProducts(0, 5, 'soldCount,desc');
-    topProducts.value = response.content;
+    topProducts.value = response.data.content;
   } catch (error) {
     console.error('Lỗi khi lấy sách bán chạy:', error);
   }
@@ -108,8 +108,8 @@ const fetchTopProducts = async () => {
 // Lấy sách mới
 const fetchNewProducts = async () => {
   try {
-    const response = await api.fetchProducts(0, 5, 'createdAt,desc');
-    newProducts.value = response.content;
+    const response = await api.fetchProducts(0, 5, 'productId');
+    newProducts.value = response.data.content;
   } catch (error) {
     console.error('Lỗi khi lấy sách mới:', error);
   }
@@ -126,13 +126,13 @@ const formatPrice = (price) => {
 // Lấy icon cho danh mục
 const getCategoryIcon = (categoryName) => {
   const icons = {
-    'Văn học': 'auto_stories',
-    'Kinh tế': 'trending_up',
-    'Tâm lý': 'psychology',
-    'Thiếu nhi': 'child_care',
-    'Giáo dục': 'school',
-    'Khoa học': 'science',
-    'Lịch sử': 'history_edu',
+    'Sách văn học': 'auto_stories',
+    'Sách kinh tế': 'trending_up',
+    'Sách tâm lý': 'psychology',
+    'Sách thiếu nhi': 'child_care',
+    'Sách giáo dục': 'school',
+    'Sách khoa học': 'science',
+    'Sách lịch sử': 'history_edu',
     'default': 'menu_book'
   };
   return icons[categoryName] || icons.default;
