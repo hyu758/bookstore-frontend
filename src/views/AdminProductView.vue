@@ -120,14 +120,14 @@
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-3">
                       <button
-                        @click="editProduct(product.id)"
+                        @click="editProduct(product.productId)"
                         class="text-blue-600 hover:text-blue-800 transition duration-150 flex items-center space-x-1"
                       >
                         <span class="material-icons text-sm">edit</span>
                         <span>Sửa</span>
                       </button>
                       <button
-                        @click="deleteProduct(product.id)"
+                        @click="deleteProduct(product.productId)"
                         class="text-red-600 hover:text-red-800 transition duration-150 flex items-center space-x-1"
                       >
                         <span class="material-icons text-sm">delete</span>

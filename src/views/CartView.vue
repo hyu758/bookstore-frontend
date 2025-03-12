@@ -28,7 +28,7 @@
           <div class="bg-white rounded-lg shadow-sm">
             <!-- Header -->
             <div class="p-4 border-b">
-              <div class="flex items-center">
+              <div class="flex items-center justify-between">
                 <label class="flex items-center">
                   <input 
                     type="checkbox" 
@@ -179,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useApi } from '@/composables/useApi';
 
@@ -260,7 +260,7 @@ const saveChanges = async () => {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ quantity: update.quantity })
+          body: JSON.stringify({ quantity : update.quantity })
         })
       )
     );
@@ -272,7 +272,6 @@ const saveChanges = async () => {
   }
 };
 
-onBeforeUnmount(saveChanges);
 
 const removeFromCart = async (item) => {
   if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
@@ -308,6 +307,11 @@ const applyCoupon = async () => {
 };
 
 const checkout = async () => {
+  // Lưu các thay đổi trước khi đặt hàng
+  if (hasChanges.value) {
+    await saveChanges();
+  }
+  
   try {
     const orderData = {
       items: selectedItems.value.map(item => ({
@@ -345,11 +349,23 @@ const fetchUserAddress = async () => {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        'Content-Type': 'application/json'
+        'Accept': '*/*'
       }
     });
-    console.log(response)
-    // userAddress.value = response.data.address;
+    
+    if (!response.ok) {
+      throw new Error('Không thể lấy thông tin người dùng');
+    }
+    
+    const data = await response.json();
+    console.log('Profile data:', data);
+    
+    if (data.success && data.data) {
+      console.log(data.data.address);
+      userAddress.value = data.data.address || '';
+    } else {
+      console.error('Không tìm thấy dữ liệu địa chỉ trong response');
+    }
   } catch (error) {
     console.error('Lỗi khi lấy thông tin địa chỉ:', error);
   } finally {
@@ -376,6 +392,8 @@ const fetchCart = async () => {
         price: item.price,
         quantity: item.quantity,
         subtotal: item.subtotal,
+        imageUrls: item.imageUrls || [],
+        author: item.author || '',
         selected: true
       }));
     }
@@ -388,7 +406,11 @@ const fetchCart = async () => {
 
 // Thêm event listener cho beforeunload
 onMounted(() => {
-  window.addEventListener('beforeunload', saveChanges);
+  window.addEventListener('beforeunload', (event) => {
+    if (hasChanges.value) {
+      saveChanges();
+    }
+  });
   fetchCart();
   fetchUserAddress();
 });

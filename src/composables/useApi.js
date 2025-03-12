@@ -9,8 +9,7 @@ export const useApi = () => {
   const fetchCategories = async (page = 0, size = 4, sort = 'name') => {
     try {
       const response = await axios.get(
-        `${API_URL}/categories?page=${page}&size=${size}&sort=${sort}`,
-        { headers: getAuthHeaders() }
+        `${API_URL}/categories?page=${page}&size=${size}&sort=${sort}`
       );
       return response.data;
     } catch (error) {
@@ -21,9 +20,20 @@ export const useApi = () => {
 
   const deleteCategory = async (id) => {
     try {
-      await axios.delete(`${API_URL}/categories/${id}`, {
-        headers: getAuthHeaders(),
+      const response = await fetch(`${API_URL}/categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi xóa danh mục');
+      }
+      
+      return true;
     } catch (error) {
       console.error("Lỗi khi xóa danh mục:", error);
       throw error;
@@ -33,8 +43,7 @@ export const useApi = () => {
   const fetchProducts = async (page = 0, size = 10, sort = 'name') => {
     try {
       const response = await axios.get(
-        `${API_URL}/products?page=${page}&size=${size}&sort=${sort}`,
-        { headers: getAuthHeaders() }
+        `${API_URL}/products?page=${page}&size=${size}&sort=${sort}`
       );
       console.log(response.data);
       return response.data;
@@ -46,12 +55,97 @@ export const useApi = () => {
 
   const deleteProduct = async (id) => {
     try {
-      await axios.delete(`${API_URL}/products/${id}`, {
-        headers: getAuthHeaders(),
+      const response = await fetch(`${API_URL}/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi xóa sản phẩm');
+      }
+      
+      return true;
     } catch (error) {
       console.error("Lỗi khi xóa sách:", error);
       throw error;
+    }
+  };
+
+  const getProductById = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/products/${id}`, {
+        headers: {
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi lấy thông tin sản phẩm');
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+      throw error;
+    }
+  };
+
+  const updateProduct = async (id, productData) => {
+    try {
+      // Format và validate dữ liệu trước khi gửi
+      const formattedData = {
+        name: productData.name || "",
+        description: productData.description || "",
+        price: Number(productData.price) || 0,
+        stockQuantity: Number(productData.stockQuantity) || 0,
+        discount: Number(productData.discount || 0),
+        realPrice: Number(productData.price) * (1 - Number(productData.discount || 0) / 100),
+        author: productData.author || "",
+        publisher: productData.publisher || "",
+        publicationYear: Number(productData.publicationYear) || new Date().getFullYear(),
+        pageCount: Number(productData.pageCount || 0),
+        categoryIds: (productData.categoryIds || []).map(id => Number(id)),
+        imageUrls: productData.imageUrls || [],
+        isbn: productData.isbn || ""
+      };
+
+      console.log('Sending updated product data:', JSON.stringify(formattedData, null, 2));
+      
+      const response = await fetch(`${API_URL}/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+          Accept: "*/*"
+        },
+        body: JSON.stringify(formattedData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi cập nhật sản phẩm');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật sản phẩm:", error);
+      if (error.response) {
+        console.error('Server response error:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        throw new Error(`Lỗi server: ${error.response.data.message || JSON.stringify(error.response.data)}`);
+      } else {
+        throw error;
+      }
     }
   };
 
@@ -114,11 +208,81 @@ export const useApi = () => {
     }
   };
 
+  const getProductImages = async (productId) => {
+    try {
+      const response = await fetch(`${API_URL}/products/${productId}/images`, {
+        headers: {
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi lấy danh sách ảnh sản phẩm');
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách ảnh sản phẩm:", error);
+      throw error;
+    }
+  };
+
+  const deleteProductImage = async (imageId) => {
+    try {
+      const response = await fetch(`${API_URL}/products/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi xóa ảnh sản phẩm');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Lỗi khi xóa ảnh sản phẩm:", error);
+      throw error;
+    }
+  };
+
+  const deleteAllProductImages = async (productId) => {
+    try {
+      const response = await fetch(`${API_URL}/products/${productId}/images`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi xóa tất cả ảnh sản phẩm');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Lỗi khi xóa tất cả ảnh sản phẩm:", error);
+      throw error;
+    }
+  };
+
   return {
     fetchCategories,
     deleteCategory,
     fetchProducts,
     deleteProduct,
-    createProduct
+    getProductById,
+    updateProduct,
+    createProduct,
+    getProductImages,
+    deleteProductImage,
+    deleteAllProductImages
   };
 }; 

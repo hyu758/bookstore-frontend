@@ -24,6 +24,7 @@
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Danh mục sách</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <div v-for="category in categories" :key="category.categoryId" 
+               @click="goToCategoryPage(category.categoryId)"
                class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex flex-col items-center text-center">
               <span class="material-icons text-4xl text-blue-600 mb-2">{{ getCategoryIcon(category.name) }}</span>
@@ -38,7 +39,10 @@
       <section class="mb-12">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Sách bán chạy</h2>
-          <button class="text-blue-600 hover:text-blue-700 flex items-center">
+          <button 
+            @click="router.push('/books')" 
+            class="text-blue-600 hover:text-blue-700 flex items-center"
+          >
             Xem tất cả
             <span class="material-icons ml-1">arrow_forward</span>
           </button>
@@ -79,11 +83,18 @@
 import { ref, onMounted } from 'vue';
 import { useApi } from '@/composables/useApi';
 import BookCard from '@/components/BookCard.vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const api = useApi();
 const categories = ref([]);
 const topProducts = ref([]);
 const newProducts = ref([]);
+
+// Chuyển hướng đến trang danh mục
+const goToCategoryPage = (categoryId) => {
+  router.push(`/books/category/${categoryId}`);
+};
 
 // Lấy danh sách danh mục
 const fetchCategories = async () => {
@@ -108,7 +119,7 @@ const fetchTopProducts = async () => {
 // Lấy sách mới
 const fetchNewProducts = async () => {
   try {
-    const response = await api.fetchProducts(0, 5, 'productId');
+    const response = await api.fetchProducts(0, 5, 'productId,desc');
     newProducts.value = response.data.content;
   } catch (error) {
     console.error('Lỗi khi lấy sách mới:', error);

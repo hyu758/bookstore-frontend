@@ -30,9 +30,9 @@ const selectImage = (index) => {
 
 const fetchProduct = async () => {
   try {
+    isLoading.value = true;
     const response = await fetch(`http://localhost:8080/api/products/${route.params.id}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         Accept: "*/*"
       }
     });
@@ -50,6 +50,12 @@ const fetchProduct = async () => {
 };
 
 const addToCart = async () => {
+  if (!localStorage.getItem('accessToken')) {
+    showError('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    window.location.href = '/login';
+    return;
+  }
   if (!product.value || isAddingToCart.value) return;
   
   isAddingToCart.value = true;

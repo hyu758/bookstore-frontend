@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ProductDetailView from '../views/ProductDetailView.vue'
+import BooksView from '../views/BooksView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,11 @@ const router = createRouter({
       component: () => import('../views/AdminProductAdd.vue'),
     },
     {
+      path: '/admin/products/edit/:id',
+      name: 'adminProductsEdit',
+      component: () => import('../views/AdminProductEdit.vue'),
+    },
+    {
       path: "/admin/products/addCategory",
       name: "AddCategory",
       component: () => import('../views/AddCategory.vue'),
@@ -59,6 +65,16 @@ const router = createRouter({
       path: '/book/:id',
       name: 'product-detail',
       component: ProductDetailView
+    },
+    {
+      path: '/books',
+      name: 'books',
+      component: BooksView
+    },
+    {
+      path: '/books/category/:categoryId',
+      name: 'books-by-category',
+      component: BooksView
     }
   ],
 })
