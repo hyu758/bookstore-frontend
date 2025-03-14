@@ -2,6 +2,7 @@
 import { ref, watchEffect, onMounted, computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
+import { useAuth } from '@/composables/useAuth';
 
 // Khai báo biến reactive
 const isLoggedIn = ref(!!localStorage.getItem("accessToken"));
@@ -11,6 +12,8 @@ const route = useRoute();
 const searchQuery = ref('');
 const cartItems = ref([]);
 const showCartDropdown = ref(false);
+const isCartLoaded = ref(false); // Biến để kiểm tra xem giỏ hàng đã được tải chưa
+const { logout: authLogout } = useAuth();
 
 const checkUserRole = async () => {
   const token = localStorage.getItem("accessToken");
@@ -48,7 +51,7 @@ const checkUserRole = async () => {
 
 // Lấy thông tin giỏ hàng
 const fetchCartItems = async () => {
-  if (!isLoggedIn.value || isAdmin.value) return;
+  if (!isLoggedIn.value || isAdmin.value || isCartLoaded.value) return;
   
   try {
     const response = await axios.get("http://localhost:8080/api/cart", {
@@ -58,7 +61,7 @@ const fetchCartItems = async () => {
       }
     });
     const result = response.data;
-    console.log("Dữ liệu giỏ hàng:", result);
+    console.log(result);
     if (result.success) {
       cartItems.value = result.data.cartDetails.map(item => ({
         cartDetailId: item.cartDetailId,
@@ -67,11 +70,13 @@ const fetchCartItems = async () => {
         price: item.price,
         quantity: item.quantity,
         subtotal: item.subtotal,
-        imageUrls: item.imageUrls || [],
+        imageUrl: item.productImageUrl || "",
         author: item.author || '',
         selected: true
       }));
+      isCartLoaded.value = true; // Đánh dấu giỏ hàng đã được tải
     }
+    console.log(cartItems.value);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin giỏ hàng:", error);
   }
@@ -105,6 +110,15 @@ const handleSearch = () => {
   }
 };
 
+// Xử lý hiển thị dropdown giỏ hàng
+const handleCartMouseEnter = () => {
+  showCartDropdown.value = true;
+  // Chỉ tải dữ liệu giỏ hàng khi người dùng hover vào icon giỏ hàng
+  if (isLoggedIn.value && !isAdmin.value && !isCartLoaded.value) {
+    fetchCartItems();
+  }
+};
+
 // Theo dõi thay đổi route để cập nhật giỏ hàng
 watch(route, (newRoute, oldRoute) => {
   // Chỉ gọi API khi thực sự cần thiết (ví dụ: sau khi thêm/xóa sản phẩm khỏi giỏ hàng)
@@ -115,6 +129,7 @@ watch(route, (newRoute, oldRoute) => {
   
   // Chỉ gọi API khi chuyển từ trang liên quan đến giỏ hàng sang trang khác
   if (isLoggedIn.value && !isAdmin.value && isFromCartRelated && !isToCartRelated) {
+    isCartLoaded.value = false; // Reset trạng thái để tải lại giỏ hàng khi cần
     fetchCartItems();
   }
 });
@@ -123,6 +138,7 @@ watch(route, (newRoute, oldRoute) => {
 const listenToCartEvents = () => {
   window.addEventListener('cart-updated', () => {
     console.log('Sự kiện cart-updated được kích hoạt');
+    isCartLoaded.value = false; // Reset trạng thái để tải lại giỏ hàng
     fetchCartItems();
   });
 };
@@ -134,33 +150,27 @@ watchEffect(() => {
     isLoggedIn.value = newLoginState;
     if (isLoggedIn.value) {
       checkUserRole();
-      // Chỉ gọi fetchCartItems một lần khi đăng nhập
-      if (!isAdmin.value) {
-        fetchCartItems();
-      }
+      // Không tải giỏ hàng ngay lập tức, chỉ đánh dấu là chưa được tải
+      isCartLoaded.value = false;
     } else {
       isAdmin.value = false;
       cartItems.value = [];
+      isCartLoaded.value = false;
     }
   }
 });
 
 onMounted(() => {
   checkUserRole();
-  // Chỉ gọi fetchCartItems một lần khi component được tạo và người dùng đã đăng nhập
-  if (isLoggedIn.value && !isAdmin.value) {
-    fetchCartItems();
-  }
+  // Không tải giỏ hàng ngay lập tức khi component được mount
   listenToCartEvents();
 });
 
 // Hàm đăng xuất
 const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  authLogout(); // Sử dụng hàm logout từ useAuth
   isLoggedIn.value = false;
   isAdmin.value = false;
-  router.push("/login");
 };
 </script>
 
@@ -252,7 +262,7 @@ const logout = () => {
               <RouterLink 
                 to="/cart" 
                 title="Giỏ hàng"
-                @mouseenter="showCartDropdown = true"
+                @mouseenter="handleCartMouseEnter"
               >
                 <span class="material-icons">shopping_cart</span>
                 <!-- Badge số lượng trong giỏ hàng -->
@@ -275,10 +285,18 @@ const logout = () => {
                   <h3 class="font-medium text-gray-800">Giỏ hàng của bạn</h3>
                 </div>
                 
-                <div v-if="cartItems.length === 0" class="px-4 py-3 text-gray-500 text-center">
+                <!-- Loading state -->
+                <div v-if="!isCartLoaded" class="px-4 py-3 text-center">
+                  <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                  <p class="text-sm text-gray-500">Đang tải giỏ hàng...</p>
+                </div>
+                
+                <!-- Empty cart -->
+                <div v-else-if="cartItems.length === 0" class="px-4 py-3 text-gray-500 text-center">
                   Giỏ hàng trống
                 </div>
                 
+                <!-- Cart items -->
                 <div v-else class="max-h-64 overflow-y-auto">
                   <div 
                     v-for="item in cartItems" 
@@ -286,7 +304,7 @@ const logout = () => {
                     class="px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <img 
-                      :src="item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : '/src/assets/no-image.png'" 
+                      :src="item.imageUrl" 
                       :alt="item.name"
                       class="w-10 h-10 object-cover rounded"
                     />
@@ -297,7 +315,8 @@ const logout = () => {
                   </div>
                 </div>
                 
-                <div class="px-4 py-2 border-t border-gray-200">
+                <!-- Cart total and checkout button -->
+                <div v-if="isCartLoaded && cartItems.length > 0" class="px-4 py-2 border-t border-gray-200">
                   <div class="flex justify-between items-center mb-2">
                     <span class="font-medium text-gray-800">Tổng cộng:</span>
                     <span class="font-bold text-blue-600">{{ formatPrice(cartTotal) }}</span>

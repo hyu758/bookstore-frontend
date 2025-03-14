@@ -8,6 +8,7 @@ const username = ref("");
 const password = ref("");
 const router = useRouter();
 const { error: showError, success } = useNotify();
+const { setToken } = useAuth();
 
 const login = async () => {
     try {
@@ -29,21 +30,23 @@ const login = async () => {
             return;
         }
 
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        setToken(
+            data.accessToken,
+            data.refreshToken,
+            data.role,
+            data.accessTokenExpirationDate,
+            data.refreshTokenExpirationDate
+        );
 
         success('Đăng nhập thành công!');
         await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.href = '/';
 
     } catch (error) {
+        console.error('Lỗi đăng nhập:', error);
         showError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
     }
 };
-
-onMounted(() => {
-    const {setToken} = useAuth();
-})
 </script>
 
 <template>

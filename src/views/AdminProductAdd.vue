@@ -258,11 +258,13 @@
   import { useRouter } from "vue-router";
   import { useAuth } from "@/composables/useAuth";
   import { useApi } from "@/composables/useApi";
+  import { useNotify } from "@/composables/notify";
   import AdminSideBar from "@/components/AdminSideBar.vue";
   
   const router = useRouter();
   const { checkAdminRole } = useAuth();
   const api = useApi();
+  const { success, error: showError } = useNotify();
   
   // Khai báo dữ liệu reactive
   const product = ref({
@@ -298,6 +300,7 @@
       categories.value = response.content;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách danh mục:", error);
+      showError("Không thể tải danh sách danh mục: " + (error.message || "Lỗi không xác định"));
     }
   };
   
@@ -358,20 +361,20 @@
   const processFiles = async (files) => {
     // Kiểm tra số lượng file
     if (previewImages.value.length + files.length > maxFiles) {
-      alert(`Bạn chỉ có thể upload tối đa ${maxFiles} ảnh`);
+      showError(`Bạn chỉ có thể upload tối đa ${maxFiles} ảnh`);
       return;
     }
   
     for (const file of files) {
       // Kiểm tra loại file
       if (!acceptedFileTypes.includes(file.type)) {
-        alert(`File ${file.name} không phải là ảnh hợp lệ`);
+        showError(`File ${file.name} không phải là ảnh hợp lệ`);
         continue;
       }
   
       // Kiểm tra kích thước file
       if (file.size > maxFileSize) {
-        alert(`File ${file.name} vượt quá kích thước cho phép (30MB)`);
+        showError(`File ${file.name} vượt quá kích thước cho phép (30MB)`);
         continue;
       }
   
@@ -384,6 +387,7 @@
         product.value.imageUrls.push(base64String);
       } catch (error) {
         console.error("Lỗi khi xử lý file:", error);
+        showError("Lỗi khi xử lý file: " + (error.message || "Lỗi không xác định"));
       }
     }
   };
@@ -412,11 +416,13 @@
   
       // Gọi API tạo sản phẩm
       await api.createProduct(product.value);
-      alert("Thêm sách thành công!");
+      success("Thêm sách thành công!");
+      // Đợi 1 giây để hiển thị thông báo trước khi chuyển trang
+      await new Promise(resolve => setTimeout(resolve, 1000));
       router.push("/admin/products");
     } catch (error) {
       console.error("Lỗi khi thêm sách:", error);
-      alert("Thêm sách thất bại! " + error.message);
+      showError("Thêm sách thất bại! " + (error.response?.data?.message || error.message));
     }
   };
   

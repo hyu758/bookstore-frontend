@@ -38,9 +38,13 @@
   import { useRouter } from "vue-router";
   import axios from "axios";
   import AdminSideBar from "@/components/AdminSideBar.vue";
+  import { useNotify } from '@/composables/notify';
+  import { useAuth } from '@/composables/useAuth';
   
   const newCategoryName = ref("");
   const router = useRouter();
+  const { success, error: showError } = useNotify();
+  const { checkAdminRole } = useAuth();
   
   // Thêm danh mục mới
   const addCategory = async () => {
@@ -57,36 +61,19 @@
         }
       );
       if (response.data.success) {
-        alert("Thêm danh mục thành công!");
+        success("Thêm danh mục thành công!");
+        // Đợi 1 giây để hiển thị thông báo trước khi chuyển trang
+        await new Promise(resolve => setTimeout(resolve, 1000));
         router.push("/admin/products"); // Quay lại trang quản lý sản phẩm
       }
     } catch (error) {
       console.error("Lỗi khi thêm danh mục:", error);
-      alert("Thêm danh mục thất bại!");
+      showError("Thêm danh mục thất bại: " + (error.response?.data?.message || error.message));
     }
   };
   
   // Kiểm tra quyền admin khi vào trang
   onMounted(async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-  
-    try {
-      const response = await axios.get("http://localhost:8080/api/auth/role", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "*/*",
-        },
-      });
-      if (response.data.data !== "ADMIN") {
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra quyền:", error);
-      router.push("/login");
-    }
+    await checkAdminRole();
   });
   </script>

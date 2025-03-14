@@ -1,11 +1,16 @@
 <script setup>
 import { ref } from "vue";
+import { useNotify } from '@/composables/notify';
+import { useRouter } from 'vue-router';
 
 const userName = ref("");
 const email = ref("");
 const password = ref("");
 const fullName = ref("");
 const errorMessage = ref("");
+const { error: showError, success } = useNotify();
+const router = useRouter();
+
 const register = async () => {
     errorMessage.value = "";
     try {
@@ -26,10 +31,14 @@ const register = async () => {
         if (!response.ok){
             throw new Error(data.message || "Đăng ký thất bại, vui lòng thử lại.");
         }
-        alert("Đăng ký thành công!");
-        window.location.href = "/login";
+        
+        success("Đăng ký thành công!");
+        // Đợi 1 giây để hiển thị thông báo trước khi chuyển trang
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        router.push("/login");
     } catch (error) {
         errorMessage.value = error.message;
+        showError(error.message);
     }
 };
 </script>

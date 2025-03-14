@@ -57,7 +57,7 @@
 
                 <!-- Ảnh sản phẩm -->
                 <img 
-                  :src="item.imageUrls[0]" 
+                  :src="item.imageUrl" 
                   :alt="item.name"
                   class="w-20 h-20 object-cover rounded-md"
                 >
@@ -182,9 +182,11 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useApi } from '@/composables/useApi';
+import { useNotify } from '@/composables/notify';
 
 const router = useRouter();
 const api = useApi();
+const { success, error: showError, confirm } = useNotify();
 const couponCode = ref('');
 const userAddress = ref('');
 const isLoadingAddress = ref(false);
@@ -272,23 +274,38 @@ const saveChanges = async () => {
   }
 };
 
-
 const removeFromCart = async (item) => {
-  if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-    try {
-      const response = await fetch(`http://localhost:8080/api/cart/items/${item.productId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-      
-      if (response.ok) {
-        cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
-      }
-    } catch (error) {
-      console.error('Lỗi khi xóa sản phẩm:', error);
+  try {
+    const confirmed = await confirm('Xóa sản phẩm', 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?');
+    if (!confirmed) return;
+    
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      showError('Bạn cần đăng nhập để thực hiện thao tác này');
+      return;
     }
+    
+    const response = await fetch(`http://localhost:8080/api/cart/items/${item.cartDetailId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': '*/*'
+      }
+    });
+    
+    if (response.ok) {
+      cartItems.value = cartItems.value.filter(i => i.cartDetailId !== item.cartDetailId);
+      success('Đã xóa sản phẩm khỏi giỏ hàng');
+      
+      // Kích hoạt sự kiện để cập nhật giỏ hàng ở header
+      window.dispatchEvent(new CustomEvent('cart-updated'));
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Không thể xóa sản phẩm');
+    }
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm:', error);
+    showError('Lỗi khi xóa sản phẩm: ' + (error.message || 'Vui lòng thử lại sau'));
   }
 };
 
@@ -299,9 +316,10 @@ const applyCoupon = async () => {
     });
     // Cập nhật lại giỏ hàng sau khi áp dụng mã giảm giá
     await fetchCart();
+    success('Đã áp dụng mã giảm giá thành công');
   } catch (error) {
     console.error('Lỗi khi áp dụng mã giảm giá:', error);
-    alert('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+    showError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
   }
   couponCode.value = '';
 };
@@ -333,11 +351,12 @@ const checkout = async () => {
     if (response.ok) {
       router.push('/checkout');
     } else {
-      throw new Error('Lỗi khi tạo đơn hàng');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi tạo đơn hàng');
     }
   } catch (error) {
     console.error('Lỗi khi tạo đơn hàng:', error);
-    alert('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.');
+    showError('Có lỗi xảy ra khi tạo đơn hàng: ' + (error.message || 'Vui lòng thử lại sau'));
   }
 };
 
@@ -384,6 +403,7 @@ const fetchCart = async () => {
       }
     });
     const result = await response.json();
+    console.log(result);
     if (result.success) {
       cartItems.value = result.data.cartDetails.map(item => ({
         cartDetailId: item.cartDetailId,
@@ -392,11 +412,13 @@ const fetchCart = async () => {
         price: item.price,
         quantity: item.quantity,
         subtotal: item.subtotal,
-        imageUrls: item.imageUrls || [],
+        imageUrl: item.productImageUrl || "",
         author: item.author || '',
         selected: true
       }));
+      console.log(cartItems.value);
     }
+
   } catch (error) {
     console.error('Lỗi khi lấy thông tin giỏ hàng:', error);
   } finally {
