@@ -74,6 +74,8 @@ const addToCart = async () => {
     const data = await response.json();
     if (data.success) {
       success('Thêm vào giỏ hàng thành công!');
+      // Kích hoạt sự kiện để cập nhật giỏ hàng trong header
+      window.dispatchEvent(new Event('cart-updated'));
     } else {
       showError(data.error || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
     }

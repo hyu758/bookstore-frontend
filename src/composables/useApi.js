@@ -273,6 +273,142 @@ export const useApi = () => {
     }
   };
 
+  // Tìm kiếm nâng cao
+  const advancedSearch = async (searchParams, page = 0, size = 10, sort = 'name') => {
+    try {
+      // Xây dựng đối tượng pageable
+      const pageable = {
+        page,
+        size,
+        sort: Array.isArray(sort) ? sort : [sort]
+      };
+
+      // Xây dựng query params
+      const params = new URLSearchParams();
+      
+      // Thêm các tham số tìm kiếm nếu có
+      if (searchParams.name) params.append('name', searchParams.name);
+      if (searchParams.author) params.append('author', searchParams.author);
+      if (searchParams.publisher) params.append('publisher', searchParams.publisher);
+      if (searchParams.minPrice) params.append('minPrice', searchParams.minPrice);
+      if (searchParams.maxPrice) params.append('maxPrice', searchParams.maxPrice);
+      if (searchParams.year) params.append('year', searchParams.year);
+      if (searchParams.categoryId) params.append('categoryId', searchParams.categoryId);
+      
+      // Thêm pageable
+      params.append('pageable', JSON.stringify(pageable));
+
+      const response = await fetch(`${API_URL}/products/search/advanced?${params.toString()}`, {
+        headers: {
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Lỗi khi tìm kiếm sản phẩm');
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm nâng cao:", error);
+      throw error;
+    }
+  };
+
+  // Quản lý người dùng
+  const fetchUsers = async (page = 0, size = 10, sort = 'id') => {
+    try {
+      const response = await fetch(`${API_URL}/users?page=${page}&size=${size}&sort=${sort}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi lấy danh sách người dùng');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách người dùng:", error);
+      throw error;
+    }
+  };
+
+  const getUserById = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Accept: "*/*"
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi lấy thông tin người dùng');
+      }
+      
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+      throw error;
+    }
+  };
+
+  const updateUserStatus = async (userId, isActive) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}/status`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+          Accept: "*/*"
+        },
+        body: JSON.stringify({ active: isActive })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi cập nhật trạng thái người dùng');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái người dùng:", error);
+      throw error;
+    }
+  };
+
+  const updateUserRole = async (userId, role) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+          Accept: "*/*"
+        },
+        body: JSON.stringify({ role: role })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Lỗi khi cập nhật vai trò người dùng');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật vai trò người dùng:", error);
+      throw error;
+    }
+  };
+
   return {
     fetchCategories,
     deleteCategory,
@@ -283,6 +419,11 @@ export const useApi = () => {
     createProduct,
     getProductImages,
     deleteProductImage,
-    deleteAllProductImages
+    deleteAllProductImages,
+    advancedSearch,
+    fetchUsers,
+    getUserById,
+    updateUserStatus,
+    updateUserRole
   };
 }; 

@@ -47,14 +47,14 @@
       <!-- Giá và nút thêm vào giỏ -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="text-lg font-bold text-blue-600">{{ formatPrice(book.price) }}</span>
+          <span class="text-lg font-bold text-blue-600">{{ formatPrice(book.realPrice) }}</span>
           <span v-if="book.discount > 0" 
                 class="text-sm text-gray-400 line-through">
-            {{ formatPrice(book.originalPrice) }}
+            {{ formatPrice(book.price) }}
           </span>
         </div>
         <button class="text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors"
-                @click="$emit('addToCart', book)">
+                @click.stop="$emit('addToCart', book)">
           <span class="material-icons">add_shopping_cart</span>
         </button>
       </div>

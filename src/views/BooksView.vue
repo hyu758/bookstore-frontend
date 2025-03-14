@@ -152,105 +152,67 @@ const fetchProducts = async () => {
   try {
     isLoading.value = true;
     
-    // Tạo đối tượng pageable
-    const pageableObj = {
-      page: currentPage.value,
-      size: pageSize.value,
-      sort: [sortBy.value]
-    };
-    const pageableStr = encodeURIComponent(JSON.stringify(pageableObj));
-    
-    // Xây dựng query parameters
-    let url = `http://localhost:8080/api/products?page=${currentPage.value}&size=${pageSize.value}&sort=${sortBy.value}`;
-    
-    // Nếu có categoryId trong URL hoặc có danh mục được chọn
-    if (selectedCategories.value.length === 1) {
-      const categoryId = selectedCategories.value[0];
-      url = `http://localhost:8080/api/products/search/category/${categoryId}?pageable=${pageableStr}`;
-    }
-    // Nếu có nhiều danh mục được chọn
-    else if (selectedCategories.value.length > 1) {
-      url = `http://localhost:8080/api/products?page=${currentPage.value}&size=${pageSize.value}&sort=${sortBy.value}`;
-      selectedCategories.value.forEach(categoryId => {
-        url += `&categoryIds=${categoryId}`;
-      });
-    }
+    // Xây dựng đối tượng tham số tìm kiếm
+    const searchParams = {};
     
     // Thêm tìm kiếm theo tên
     if (searchQuery.value) {
-      // Nếu đang ở trang danh mục, thêm tham số tìm kiếm
-      if (selectedCategories.value.length === 1) {
-        url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-      } else {
-        url = `http://localhost:8080/api/products/search/name?name=${encodeURIComponent(searchQuery.value)}&page=${currentPage.value}&size=${pageSize.value}&sort=${sortBy.value}`;
-        
-        // Thêm lại các tham số danh mục nếu có
-        if (selectedCategories.value.length > 0) {
-          selectedCategories.value.forEach(categoryId => {
-            url += `&categoryIds=${categoryId}`;
-          });
-        }
-      }
+      searchParams.name = searchQuery.value;
+    }
+    
+    // Thêm lọc theo danh mục
+    if (selectedCategories.value.length === 1) {
+      searchParams.categoryId = selectedCategories.value[0];
+    } else if (selectedCategories.value.length > 1) {
+      // API hiện tại chỉ hỗ trợ một categoryId, nên chúng ta sẽ xử lý trường hợp nhiều danh mục ở client
+      // Trong tương lai, API có thể được cập nhật để hỗ trợ nhiều categoryId
     }
     
     // Thêm lọc theo giá
     if (priceRange.value !== 'all') {
       const [min, max] = priceRange.value.split('-');
-      
-      // Nếu đang ở trang danh mục hoặc tìm kiếm, thêm tham số giá
-      if (selectedCategories.value.length === 1 || searchQuery.value) {
-        if (min) url += `&minPrice=${min}`;
-        if (max) url += `&maxPrice=${max}`;
-      } else {
-        // Nếu có cả min và max, sử dụng API price-range
-        if (min && max) {
-          url = `http://localhost:8080/api/products/search/price-range?minPrice=${min}&maxPrice=${max}&pageable=${pageableStr}`;
-        } 
-        // Nếu chỉ có min (trên 300k)
-        else if (min && !max) {
-          url = `http://localhost:8080/api/products/search/price-range?minPrice=${min}&pageable=${pageableStr}`;
-        }
-        // Nếu chỉ có max (dưới 100k)
-        else if (!min && max) {
-          url = `http://localhost:8080/api/products/search/price-range?maxPrice=${max}&pageable=${pageableStr}`;
-        }
-        
-        // Thêm lại các tham số khác nếu cần
-        if (searchQuery.value) {
-          url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-        }
-        
-        if (selectedCategories.value.length > 0) {
-          selectedCategories.value.forEach(categoryId => {
-            url += `&categoryIds=${categoryId}`;
-          });
-        }
-      }
+      if (min) searchParams.minPrice = min;
+      if (max) searchParams.maxPrice = max;
     }
     
-    // Thêm lọc theo đánh giá
+    // Thêm lọc theo đánh giá (nếu API hỗ trợ)
     if (ratingFilter.value > 0) {
-      url += `&minRating=${ratingFilter.value}`;
+      // Hiện tại API không hỗ trợ lọc theo đánh giá, nên chúng ta sẽ xử lý ở client
+      // searchParams.minRating = ratingFilter.value;
     }
     
-    console.log('Fetching products with URL:', url);
+    console.log('Tìm kiếm nâng cao với tham số:', searchParams);
     
-    const response = await fetch(url, {
-      headers: {
-        Accept: "*/*"
-      }
-    });
+    // Gọi API tìm kiếm nâng cao
+    const data = await api.advancedSearch(
+      searchParams,
+      currentPage.value,
+      pageSize.value,
+      sortBy.value
+    );
     
-    const data = await response.json();
-    
-    if (data.success) {
-      products.value = data.data.content;
-      totalPages.value = data.data.totalPages;
-      totalElements.value = data.data.totalElements;
-      updateAppliedFilters();
-    } else {
-      showError('Không thể tải danh sách sản phẩm');
+    // Lọc kết quả theo danh mục (nếu có nhiều danh mục được chọn)
+    let filteredData = data.content;
+    if (selectedCategories.value.length > 1) {
+      filteredData = filteredData.filter(product => {
+        // Kiểm tra xem sản phẩm có thuộc một trong các danh mục được chọn không
+        return product.categories.some(category => 
+          selectedCategories.value.includes(category.categoryId)
+        );
+      });
     }
+    
+    // Lọc kết quả theo đánh giá (nếu có)
+    if (ratingFilter.value > 0) {
+      filteredData = filteredData.filter(product => 
+        product.averageRating >= ratingFilter.value
+      );
+    }
+    
+    products.value = filteredData;
+    totalPages.value = data.totalPages;
+    totalElements.value = data.totalElements;
+    updateAppliedFilters();
   } catch (error) {
     console.error('Lỗi khi lấy sản phẩm:', error);
     showError('Có lỗi xảy ra khi tải sản phẩm');
@@ -431,6 +393,8 @@ const handleAddToCart = async (book) => {
     const data = await response.json();
     if (data.success) {
       showSuccess('Thêm vào giỏ hàng thành công!');
+      // Kích hoạt sự kiện để cập nhật giỏ hàng trong header
+      window.dispatchEvent(new Event('cart-updated'));
     } else {
       showError(data.error || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
     }

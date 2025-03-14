@@ -2,6 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ProductDetailView from '../views/ProductDetailView.vue'
 import BooksView from '../views/BooksView.vue'
+import AdminProductView from '../views/AdminProductView.vue'
+import AdminProductAdd from '../views/AdminProductAdd.vue'
+import AdminProductEdit from '../views/AdminProductEdit.vue'
+import AdminUserView from '../views/AdminUserView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,17 +33,26 @@ const router = createRouter({
     {
       path: '/admin/products',
       name: 'adminProducts',
-      component: () => import('../views/AdminProductView.vue'),
+      component: AdminProductView,
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/products/add',
       name: 'adminProductsAdd',
-      component: () => import('../views/AdminProductAdd.vue'),
+      component: AdminProductAdd,
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/products/edit/:id',
       name: 'adminProductsEdit',
-      component: () => import('../views/AdminProductEdit.vue'),
+      component: AdminProductEdit,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/users',
+      name: 'adminUsers',
+      component: AdminUserView,
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: "/admin/products/addCategory",

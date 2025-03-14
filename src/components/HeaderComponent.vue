@@ -1,12 +1,13 @@
 <script setup>
-import { ref, watchEffect, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, watchEffect, onMounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 
 // Khai báo biến reactive
 const isLoggedIn = ref(!!localStorage.getItem("accessToken"));
 const isAdmin = ref(false); // Biến để kiểm tra vai trò admin
 const router = useRouter();
+const route = useRoute();
 const searchQuery = ref('');
 const cartItems = ref([]);
 const showCartDropdown = ref(false);
@@ -57,7 +58,7 @@ const fetchCartItems = async () => {
       }
     });
     const result = response.data;
-    console.log(result);
+    console.log("Dữ liệu giỏ hàng:", result);
     if (result.success) {
       cartItems.value = result.data.cartDetails.map(item => ({
         cartDetailId: item.cartDetailId,
@@ -104,20 +105,53 @@ const handleSearch = () => {
   }
 };
 
-watchEffect(() => {
-  isLoggedIn.value = !!localStorage.getItem("accessToken");
-  if (isLoggedIn.value) {
-    checkUserRole();
+// Theo dõi thay đổi route để cập nhật giỏ hàng
+watch(route, (newRoute, oldRoute) => {
+  // Chỉ gọi API khi thực sự cần thiết (ví dụ: sau khi thêm/xóa sản phẩm khỏi giỏ hàng)
+  // Kiểm tra xem route có thay đổi từ trang giỏ hàng hoặc trang chi tiết sản phẩm không
+  const cartRelatedRoutes = ['/cart', '/checkout'];
+  const isFromCartRelated = oldRoute.path && cartRelatedRoutes.some(route => oldRoute.path.includes(route));
+  const isToCartRelated = newRoute.path && cartRelatedRoutes.some(route => newRoute.path.includes(route));
+  
+  // Chỉ gọi API khi chuyển từ trang liên quan đến giỏ hàng sang trang khác
+  if (isLoggedIn.value && !isAdmin.value && isFromCartRelated && !isToCartRelated) {
     fetchCartItems();
-  } else {
-    isAdmin.value = false;
-    cartItems.value = [];
+  }
+});
+
+// Lắng nghe sự kiện thêm vào giỏ hàng
+const listenToCartEvents = () => {
+  window.addEventListener('cart-updated', () => {
+    console.log('Sự kiện cart-updated được kích hoạt');
+    fetchCartItems();
+  });
+};
+
+watchEffect(() => {
+  const newLoginState = !!localStorage.getItem("accessToken");
+  // Chỉ gọi API khi trạng thái đăng nhập thay đổi từ chưa đăng nhập sang đã đăng nhập
+  if (newLoginState !== isLoggedIn.value) {
+    isLoggedIn.value = newLoginState;
+    if (isLoggedIn.value) {
+      checkUserRole();
+      // Chỉ gọi fetchCartItems một lần khi đăng nhập
+      if (!isAdmin.value) {
+        fetchCartItems();
+      }
+    } else {
+      isAdmin.value = false;
+      cartItems.value = [];
+    }
   }
 });
 
 onMounted(() => {
   checkUserRole();
-  fetchCartItems();
+  // Chỉ gọi fetchCartItems một lần khi component được tạo và người dùng đã đăng nhập
+  if (isLoggedIn.value && !isAdmin.value) {
+    fetchCartItems();
+  }
+  listenToCartEvents();
 });
 
 // Hàm đăng xuất
@@ -214,12 +248,11 @@ const logout = () => {
             <div 
               v-if="!isAdmin"
               class="text-gray-600 hover:text-blue-600 relative cart-dropdown"
-              @mouseenter="showCartDropdown = true"
-              @mouseleave="showCartDropdown = false"
             >
               <RouterLink 
                 to="/cart" 
                 title="Giỏ hàng"
+                @mouseenter="showCartDropdown = true"
               >
                 <span class="material-icons">shopping_cart</span>
                 <!-- Badge số lượng trong giỏ hàng -->
@@ -234,7 +267,9 @@ const logout = () => {
               <!-- Dropdown giỏ hàng mini -->
               <div 
                 v-if="showCartDropdown" 
-                class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-50 py-2"
+                class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-50 py-2 cart-dropdown-menu"
+                @mouseenter="showCartDropdown = true"
+                @mouseleave="showCartDropdown = false"
               >
                 <div class="px-4 py-2 border-b border-gray-200">
                   <h3 class="font-medium text-gray-800">Giỏ hàng của bạn</h3>
@@ -246,23 +281,19 @@ const logout = () => {
                 
                 <div v-else class="max-h-64 overflow-y-auto">
                   <div 
-                    v-for="item in cartItems.slice(0, 3)" 
-                    :key="item.cartItemId"
+                    v-for="item in cartItems" 
+                    :key="item.cartDetailId"
                     class="px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <img 
-                      :src="item.imageUrls[0]" 
+                      :src="item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : '/src/assets/no-image.png'" 
                       :alt="item.name"
                       class="w-10 h-10 object-cover rounded"
                     />
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-gray-800 truncate">{{ item.name }}</p>
-                      <p class="text-xs text-gray-500">{{ item.quantity }} x {{ formatPrice(item.realPrice) }}</p>
+                      <p class="text-xs text-gray-500">{{ item.quantity }} x {{ formatPrice(item.price) }}</p>
                     </div>
-                  </div>
-                  
-                  <div v-if="cartItems.length > 3" class="px-4 py-2 text-xs text-gray-500 text-center">
-                    ... và {{ cartItems.length - 3 }} sản phẩm khác
                   </div>
                 </div>
                 
@@ -322,5 +353,30 @@ const logout = () => {
 /* Styling cho dropdown giỏ hàng */
 .cart-dropdown {
   position: relative;
+}
+
+/* Thêm thanh cuộn cho dropdown giỏ hàng */
+.cart-dropdown .max-h-64 {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.cart-dropdown .max-h-64::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-dropdown .max-h-64::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 3px;
+}
+
+.cart-dropdown .max-h-64::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 3px;
+}
+
+/* Đảm bảo dropdown không bị ẩn khi di chuột vào */
+.cart-dropdown-menu {
+  display: block;
 }
 </style>

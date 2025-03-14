@@ -82,11 +82,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useApi } from '@/composables/useApi';
+import { useNotify } from '@/composables/notify';
 import BookCard from '@/components/BookCard.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const api = useApi();
+const { success: showSuccess, error: showError } = useNotify();
 const categories = ref([]);
 const topProducts = ref([]);
 const newProducts = ref([]);
@@ -150,9 +152,35 @@ const getCategoryIcon = (categoryName) => {
 };
 
 // Xử lý thêm vào giỏ hàng
-const handleAddToCart = (book) => {
-  // TODO: Implement add to cart functionality
-  console.log('Thêm vào giỏ:', book);
+const handleAddToCart = async (book) => {
+  if (!localStorage.getItem('accessToken')) {
+    showError('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:8080/api/cart/items/${book.productId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        quantity: 1
+      })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showSuccess('Thêm vào giỏ hàng thành công!');
+      // Kích hoạt sự kiện để cập nhật giỏ hàng trong header
+      window.dispatchEvent(new Event('cart-updated'));
+    } else {
+      showError(data.error || 'Có lỗi xảy ra khi thêm vào giỏ hàng');
+    }
+  } catch (error) {
+    showError('Có lỗi xảy ra khi thêm vào giỏ hàng');
+  }
 };
 
 onMounted(() => {
