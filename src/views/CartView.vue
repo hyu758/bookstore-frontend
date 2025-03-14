@@ -285,20 +285,32 @@ const removeFromCart = async (item) => {
       return;
     }
     
-    const response = await fetch(`http://localhost:8080/api/cart/items/${item.cartDetailId}`, {
+    // Sử dụng productId thay vì cartDetailId để xóa sản phẩm
+    const response = await fetch(`http://localhost:8080/api/cart/items/${item.productId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept': '*/*'
+        'Accept': '*/*',
+        'Content-Type': 'application/json'
       }
     });
     
+    console.log('Xóa sản phẩm response:', response);
+    
     if (response.ok) {
-      cartItems.value = cartItems.value.filter(i => i.cartDetailId !== item.cartDetailId);
+      // Xóa sản phẩm khỏi danh sách hiện tại
+      cartItems.value = cartItems.value.filter(i => i.productId !== item.productId);
+      
+      // Xóa khỏi pendingUpdates nếu có
+      if (pendingUpdates.value.has(item.productId)) {
+        pendingUpdates.value.delete(item.productId);
+      }
+      
       success('Đã xóa sản phẩm khỏi giỏ hàng');
       
       // Kích hoạt sự kiện để cập nhật giỏ hàng ở header
       window.dispatchEvent(new CustomEvent('cart-updated'));
+      
     } else {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Không thể xóa sản phẩm');
