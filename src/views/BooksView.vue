@@ -373,7 +373,7 @@ const changePage = (page) => {
 };
 
 const handleAddToCart = async (book) => {
-  if (!localStorage.getItem('accessToken')) {
+  if (!sessionStorage.getItem('accessToken')) {
     showError('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
     return;
   }
@@ -382,7 +382,7 @@ const handleAddToCart = async (book) => {
     const response = await fetch(`http://localhost:8080/api/cart/items/${book.productId}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

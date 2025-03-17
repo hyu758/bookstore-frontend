@@ -5,7 +5,7 @@ import axios from "axios";
 import { useAuth } from '@/composables/useAuth';
 
 // Khai báo biến reactive
-const isLoggedIn = ref(!!localStorage.getItem("accessToken"));
+const isLoggedIn = ref(!!sessionStorage.getItem("accessToken"));
 const isAdmin = ref(false); // Biến để kiểm tra vai trò admin
 const router = useRouter();
 const route = useRoute();
@@ -14,9 +14,10 @@ const cartItems = ref([]);
 const showCartDropdown = ref(false);
 const isCartLoaded = ref(false); // Biến để kiểm tra xem giỏ hàng đã được tải chưa
 const { logout: authLogout } = useAuth();
+const token = sessionStorage.getItem("accessToken");
 
 const checkUserRole = async () => {
-  const token = localStorage.getItem("accessToken");
+  const token = sessionStorage.getItem("accessToken");
   if (!token) {
     isLoggedIn.value = false;
     isAdmin.value = false;
@@ -56,7 +57,7 @@ const fetchCartItems = async () => {
   try {
     const response = await axios.get("http://localhost:8080/api/cart", {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         Accept: "*/*"
       }
     });
@@ -144,7 +145,7 @@ const listenToCartEvents = () => {
 };
 
 watchEffect(() => {
-  const newLoginState = !!localStorage.getItem("accessToken");
+  const newLoginState = !!sessionStorage.getItem("accessToken");
   // Chỉ gọi API khi trạng thái đăng nhập thay đổi từ chưa đăng nhập sang đã đăng nhập
   if (newLoginState !== isLoggedIn.value) {
     isLoggedIn.value = newLoginState;

@@ -6,6 +6,7 @@ import AdminProductView from '../views/AdminProductView.vue'
 import AdminProductAdd from '../views/AdminProductAdd.vue'
 import AdminProductEdit from '../views/AdminProductEdit.vue'
 import AdminUserView from '../views/AdminUserView.vue'
+import AdminUserDetailView from '../views/AdminUserDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +53,12 @@ const router = createRouter({
       path: '/admin/users',
       name: 'adminUsers',
       component: AdminUserView,
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/admin/users/detail/:id',
+      name: 'adminUsersDetail',
+      component: AdminUserDetailView,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

@@ -98,7 +98,7 @@
   // Lấy thông tin hồ sơ từ API
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         router.push("/login");
         return;
@@ -128,7 +128,7 @@
   // Cập nhật thông tin hồ sơ
   const updateProfile = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       const updateData = {
         fullName: profile.value.fullName,
         address: profile.value.address,
@@ -159,7 +159,7 @@
   
   // Kiểm tra quyền truy cập khi component được mount
   onMounted(async () => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       
       router.push("/login");

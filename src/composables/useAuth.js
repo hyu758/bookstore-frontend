@@ -4,11 +4,11 @@ import { useRouter } from 'vue-router';
 import { useNotify } from './notify';
 
 export const useAuth = () => {
-  const token = ref(localStorage.getItem('accessToken'));
-  const refreshToken = ref(localStorage.getItem('refreshToken'));
-  const role = ref(localStorage.getItem('userRole'));
-  const accessTokenExpiration = ref(localStorage.getItem('accessTokenExpiration') ? new Date(localStorage.getItem('accessTokenExpiration')) : null);
-  const refreshTokenExpiration = ref(localStorage.getItem('refreshTokenExpiration') ? new Date(localStorage.getItem('refreshTokenExpiration')) : null);
+  const token = ref(sessionStorage.getItem('accessToken'));
+  const refreshToken = ref(sessionStorage.getItem('refreshToken'));
+  const role = ref(sessionStorage.getItem('userRole'));
+  const accessTokenExpiration = ref(sessionStorage.getItem('accessTokenExpiration') ? new Date(sessionStorage.getItem('accessTokenExpiration')) : null);
+  const refreshTokenExpiration = ref(sessionStorage.getItem('refreshTokenExpiration') ? new Date(sessionStorage.getItem('refreshTokenExpiration')) : null);
   const router = useRouter();
   const { error: showError } = useNotify();
   let tokenCheckInterval = null;
@@ -24,36 +24,36 @@ export const useAuth = () => {
     
     if (newAccessTokenExpiration) {
       accessTokenExpiration.value = new Date(newAccessTokenExpiration);
-      localStorage.setItem('accessTokenExpiration', newAccessTokenExpiration);
+      sessionStorage.setItem('accessTokenExpiration', newAccessTokenExpiration);
     } else {
       accessTokenExpiration.value = null;
-      localStorage.removeItem('accessTokenExpiration');
+      sessionStorage.removeItem('accessTokenExpiration');
     }
     
     if (newRefreshTokenExpiration) {
       refreshTokenExpiration.value = new Date(newRefreshTokenExpiration);
-      localStorage.setItem('refreshTokenExpiration', newRefreshTokenExpiration);
+      sessionStorage.setItem('refreshTokenExpiration', newRefreshTokenExpiration);
     } else {
       refreshTokenExpiration.value = null;
-      localStorage.removeItem('refreshTokenExpiration');
+      sessionStorage.removeItem('refreshTokenExpiration');
     }
     
     if (newToken) {
-      localStorage.setItem('accessToken', newToken);
+      sessionStorage.setItem('accessToken', newToken);
     } else {
-      localStorage.removeItem('accessToken');
+      sessionStorage.removeItem('accessToken');
     }
     
     if (newRefreshToken) {
-      localStorage.setItem('refreshToken', newRefreshToken);
+      sessionStorage.setItem('refreshToken', newRefreshToken);
     } else {
-      localStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('refreshToken');
     }
     
     if (newRole) {
-      localStorage.setItem('userRole', newRole);
+      sessionStorage.setItem('userRole', newRole);
     } else {
-      localStorage.removeItem('userRole');
+      sessionStorage.removeItem('userRole');
     }
     
     // Thiết lập kiểm tra token hết hạn
@@ -94,11 +94,11 @@ export const useAuth = () => {
     accessTokenExpiration.value = null;
     refreshTokenExpiration.value = null;
     
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("accessTokenExpiration");
-    localStorage.removeItem("refreshTokenExpiration");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("accessTokenExpiration");
+    sessionStorage.removeItem("refreshTokenExpiration");
     
     if (tokenCheckInterval) {
       clearInterval(tokenCheckInterval);

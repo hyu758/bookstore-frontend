@@ -254,12 +254,19 @@ const saveChanges = async () => {
       quantity
     }));
     
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
+      return;
+    }
+    
     await Promise.all(
       updates.map(update => 
         fetch(`http://localhost:8080/api/cart/items/${update.productId}`, {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ quantity : update.quantity })
@@ -269,8 +276,15 @@ const saveChanges = async () => {
     
     hasChanges.value = false;
     pendingUpdates.value.clear();
+    
+    // Kích hoạt sự kiện để cập nhật giỏ hàng ở header
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    
+    // Tải lại giỏ hàng sau khi cập nhật
+    await fetchCart();
   } catch (error) {
     console.error('Lỗi khi cập nhật giỏ hàng:', error);
+    showError('Lỗi khi cập nhật giỏ hàng: ' + (error.message || 'Vui lòng thử lại sau'));
   }
 };
 
@@ -279,9 +293,10 @@ const removeFromCart = async (item) => {
     const confirmed = await confirm('Xóa sản phẩm', 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?');
     if (!confirmed) return;
     
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      showError('Bạn cần đăng nhập để thực hiện thao tác này');
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
       return;
     }
     
@@ -343,6 +358,13 @@ const checkout = async () => {
   }
   
   try {
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
+      return;
+    }
+    
     const orderData = {
       items: selectedItems.value.map(item => ({
         productId: item.productId,
@@ -354,7 +376,7 @@ const checkout = async () => {
     const response = await fetch('http://localhost:8080/api/orders', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(orderData)
@@ -376,10 +398,18 @@ const checkout = async () => {
 const fetchUserAddress = async () => {
   try {
     isLoadingAddress.value = true;
+    
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
+      return;
+    }
+    
     const response = await fetch('http://localhost:8080/api/users/profile', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Authorization': `Bearer ${token}`,
         'Accept': '*/*'
       }
     });
@@ -410,7 +440,7 @@ const fetchCart = async () => {
     isLoadingCart.value = true;
     const response = await fetch('http://localhost:8080/api/cart', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
         Accept: "*/*"
       }
     });

@@ -87,36 +87,48 @@
               <thead>
                 <tr class="bg-gray-50">
                   <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sách
-                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sách</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giảm giá
-                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giảm giá</th>
                   <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đã bán</th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cập nhật
-                  </th>
-                  <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác
-                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
+                  <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Năm XB</th>
+                  <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50 transition duration-150">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.id }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.name }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.price.toLocaleString('vi-VN')
-                    }}₫</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.discount }}%</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.soldQuantity }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.stockQuantity }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.category }}</td>
+                <tr v-for="product in products" :key="product.productId" class="hover:bg-gray-50 transition duration-150">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.productId }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div class="flex items-center">
+                      <div class="h-10 w-10 flex-shrink-0">
+                        <img v-if="product.imageUrls && product.imageUrls.length > 0" :src="product.imageUrls[0]" class="h-10 w-10 object-cover rounded-md" :alt="product.name">
+                        <div v-else class="h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                          <span class="material-icons text-gray-400">image_not_supported</span>
+                        </div>
+                      </div>
+                      <div class="ml-4 max-w-xs truncate">
+                        <div class="text-sm font-medium text-gray-900 truncate" :title="product.name">{{ product.name }}</div>
+                        <div class="text-xs text-gray-500">ISBN: {{ product.isbn || 'N/A' }}</div>
+                      </div>
+                    </div>
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.author }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.updatedAt }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.price.toLocaleString('vi-VN') }}₫</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span v-if="product.discount > 0" class="px-2 py-1 text-xs font-medium rounded-full" :class="product.discount > 20 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'">
+                      {{ product.discount }}%
+                    </span>
+                    <span v-else class="text-gray-500">-</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.soldCount }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span :class="product.stockQuantity < 10 ? 'text-red-600 font-medium' : 'text-gray-900'">
+                      {{ product.stockQuantity }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.publicationYear }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-3">
                       <button @click="editProduct(product.productId)"

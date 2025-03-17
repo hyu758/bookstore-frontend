@@ -317,94 +317,91 @@ export const useApi = () => {
   };
 
   // Quản lý người dùng
-  const fetchUsers = async (page = 0, size = 10, sort = 'id') => {
+  const fetchUsers = async (page = 0, size = 10, sort = 'userId,desc', queryParams = '') => {
     try {
-      const response = await fetch(`${API_URL}/users?page=${page}&size=${size}&sort=${sort}`, {
+      const url = `http://localhost:8080/api/admin/users?page=${page}&size=${size}&sort=${sort}${queryParams ? '&' + queryParams : ''}`;
+      const response = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
           Accept: "*/*"
         }
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Lỗi khi lấy danh sách người dùng');
+        throw new Error('Không thể lấy danh sách người dùng');
       }
       
       const data = await response.json();
-      return data;
+      return data.data;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách người dùng:", error);
       throw error;
     }
   };
 
-  const getUserById = async (id) => {
+  const getUserById = async (userId) => {
     try {
-      const response = await fetch(`${API_URL}/users/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
           Accept: "*/*"
         }
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Lỗi khi lấy thông tin người dùng');
+        throw new Error(`Không thể lấy thông tin người dùng ID ${userId}`);
       }
       
       const data = await response.json();
       return data.data;
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
+      console.error(`Lỗi khi lấy thông tin người dùng ID ${userId}:`, error);
       throw error;
     }
   };
 
   const updateUserStatus = async (userId, isActive) => {
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/status`, {
+      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json',
-          Accept: "*/*"
+          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ active: isActive })
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Lỗi khi cập nhật trạng thái người dùng');
+        throw new Error(`Không thể cập nhật trạng thái người dùng ID ${userId}`);
       }
       
-      return true;
+      const data = await response.json();
+      return data.success;
     } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái người dùng:", error);
+      console.error(`Lỗi khi cập nhật trạng thái người dùng ID ${userId}:`, error);
       throw error;
     }
   };
 
   const updateUserRole = async (userId, role) => {
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/role`, {
+      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json',
-          Accept: "*/*"
+          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ role: role })
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Lỗi khi cập nhật vai trò người dùng');
+        throw new Error(`Không thể cập nhật vai trò người dùng ID ${userId}`);
       }
       
-      return true;
+      const data = await response.json();
+      return data.success;
     } catch (error) {
-      console.error("Lỗi khi cập nhật vai trò người dùng:", error);
+      console.error(`Lỗi khi cập nhật vai trò người dùng ID ${userId}:`, error);
       throw error;
     }
   };

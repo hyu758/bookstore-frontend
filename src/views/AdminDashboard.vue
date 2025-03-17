@@ -64,7 +64,7 @@ import AdminSideBar from "@/components/AdminSideBar.vue";
   
   // Kiểm tra quyền admin khi vào trang
   onMounted(async () => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       router.push("/login");
       return;

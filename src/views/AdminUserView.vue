@@ -1,217 +1,342 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Quản lý người dùng</h1>
-    
-    <!-- Loading và Error -->
-    <div v-if="loading" class="flex justify-center items-center py-10">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-    
-    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      <p>{{ error }}</p>
-    </div>
-    
-    <!-- Bảng người dùng -->
-    <div v-else class="overflow-x-auto bg-white shadow-md rounded-lg">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên người dùng</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.id }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.username }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <span 
-                :class="user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'" 
-                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-              >
-                {{ user.role }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <span 
-                :class="user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
-                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-              >
-                {{ user.active ? 'Hoạt động' : 'Bị khóa' }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex space-x-2">
-                <!-- Nút thay đổi vai trò -->
-                <button 
-                  @click="changeRole(user)" 
-                  class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded"
-                  :disabled="isProcessing"
-                >
-                  {{ user.role === 'ADMIN' ? 'Hạ quyền' : 'Nâng quyền' }}
-                </button>
-                
-                <!-- Nút thay đổi trạng thái -->
-                <button 
-                  @click="changeStatus(user)" 
-                  class="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded"
-                  :disabled="isProcessing"
-                >
-                  {{ user.active ? 'Khóa' : 'Mở khóa' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <!-- Phân trang -->
-    <div class="flex justify-between items-center mt-4">
-      <div class="text-sm text-gray-700">
-        Hiển thị <span class="font-medium">{{ users.length }}</span> người dùng
+  <div class="flex h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <AdminSideBar></AdminSideBar>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-8 overflow-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Quản lý người dùng</h2>
+        <div class="flex space-x-4">
+          <div class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Tìm kiếm người dùng..."
+              class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              @keyup.enter="searchUsers"
+            />
+            <span class="material-icons absolute left-3 top-2.5 text-gray-400">search</span>
+          </div>
+          <select
+            v-model="filterRole"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            @change="applyFilters"
+          >
+            <option value="">Tất cả vai trò</option>
+            <option value="ADMIN">Admin</option>
+            <option value="USER">User</option>
+          </select>
+          <select
+            v-model="filterStatus"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            @change="applyFilters"
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="true">Đang hoạt động</option>
+            <option value="false">Bị khóa</option>
+          </select>
+        </div>
       </div>
-      
-      <div class="flex space-x-2">
-        <button 
-          @click="prevPage" 
-          :disabled="currentPage === 0"
-          :class="currentPage === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
-          class="px-4 py-2 border rounded-md text-sm font-medium"
-        >
-          Trước
-        </button>
-        <span class="px-4 py-2 border rounded-md bg-blue-50 text-blue-600">{{ currentPage + 1 }}</span>
-        <button 
-          @click="nextPage" 
-          :disabled="!hasNextPage"
-          :class="!hasNextPage ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'"
-          class="px-4 py-2 border rounded-md text-sm font-medium"
-        >
-          Sau
-        </button>
+
+      <!-- Loading state -->
+      <div v-if="isLoading" class="text-center py-12">
+        <span class="material-icons animate-spin text-blue-600 text-4xl">sync</span>
+        <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+      </div>
+
+      <!-- Bảng người dùng -->
+      <div v-else class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Người dùng</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đăng ký</th>
+                <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.id }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                      <span class="material-icons text-gray-500">person</span>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">{{ user.fullName }}</div>
+                      <div class="text-sm text-gray-500">{{ user.username }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.phoneNumber || 'N/A' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                        :class="user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                        :class="user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    {{ user.active ? 'Hoạt động' : 'Bị khóa' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatDate(user.createdAt) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex items-center justify-end space-x-3">
+                    <button @click="viewUserDetail(user.id)"
+                      class="text-indigo-600 hover:text-indigo-800 transition duration-150 flex items-center space-x-1">
+                      <span class="material-icons text-sm">visibility</span>
+                      <span>Chi tiết</span>
+                    </button>
+                    <button v-if="user.role !== 'ADMIN' || currentUserIsAdmin"
+                      @click="toggleUserRole(user)"
+                      class="text-purple-600 hover:text-purple-800 transition duration-150 flex items-center space-x-1">
+                      <span class="material-icons text-sm">manage_accounts</span>
+                      <span>{{ user.role === 'USER' ? 'Nâng quyền' : 'Hạ quyền' }}</span>
+                    </button>
+                    <button @click="toggleUserStatus(user)"
+                      :class="user.active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'"
+                      class="transition duration-150 flex items-center space-x-1">
+                      <span class="material-icons text-sm">{{ user.active ? 'block' : 'check_circle' }}</span>
+                      <span>{{ user.active ? 'Khóa' : 'Kích hoạt' }}</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- Không có dữ liệu -->
+              <tr v-if="users.length === 0">
+                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                  <span class="material-icons text-gray-400 text-4xl mb-2">person_off</span>
+                  <p>Không tìm thấy người dùng nào</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Phân trang -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+          <div class="text-sm text-gray-500">
+            Hiển thị {{ users.length }} / {{ pagination.totalElements }} người dùng
+          </div>
+          <div class="flex items-center space-x-4">
+            <button @click="changePage(pagination.currentPage - 1)"
+              :disabled="pagination.currentPage === 0"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span class="material-icons text-sm mr-1">chevron_left</span>
+              Trước
+            </button>
+            <span class="text-sm text-gray-700">
+              Trang {{ pagination.currentPage + 1 }} / {{ pagination.totalPages || 1 }}
+            </span>
+            <button @click="changePage(pagination.currentPage + 1)"
+              :disabled="pagination.currentPage >= pagination.totalPages - 1"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              Sau
+              <span class="material-icons text-sm ml-1">chevron_right</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <!-- Thông báo -->
-    <div v-if="notification.show" :class="`fixed bottom-4 right-4 p-4 rounded-md ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white shadow-lg`">
-      {{ notification.message }}
-    </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog :show="showConfirmDialog" :title="confirmDialogConfig.title" :message="confirmDialogConfig.message"
+      @confirm="handleConfirm" @cancel="handleCancel" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useApi } from '../composables/useApi';
+import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import AdminSideBar from "@/components/AdminSideBar.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import { useAuth } from "@/composables/useAuth";
+import { useApi } from "@/composables/useApi";
+import { useNotify } from "@/composables/notify";
 
-// State
-const users = ref([]);
-const loading = ref(true);
-const error = ref(null);
-const currentPage = ref(0);
-const pageSize = ref(10);
-const totalPages = ref(0);
-const isProcessing = ref(false);
-const notification = ref({
-  show: false,
-  message: '',
-  type: 'success'
-});
-
-// API
+const router = useRouter();
+const { checkAdminRole } = useAuth();
 const api = useApi();
+const { success, error: showError } = useNotify();
 
-// Computed
-const hasNextPage = computed(() => {
-  return currentPage.value < totalPages.value - 1;
+const users = ref([]);
+const isLoading = ref(true);
+const searchQuery = ref('');
+const filterRole = ref('');
+const filterStatus = ref('');
+const currentUserIsAdmin = ref(true); // Mặc định là true, sẽ được cập nhật trong onMounted
+
+// State cho confirm dialog
+const showConfirmDialog = ref(false);
+const confirmDialogConfig = ref({
+  title: '',
+  message: '',
+  callback: null
 });
 
-// Methods
+// State quản lý phân trang
+const pagination = ref({
+  currentPage: 0,
+  totalPages: 0,
+  totalElements: 0,
+  size: 10
+});
+
+// Lấy danh sách người dùng từ API với phân trang và lọc
 const fetchUsers = async () => {
-  loading.value = true;
-  error.value = null;
-  
   try {
-    const response = await api.fetchUsers(currentPage.value, pageSize.value, 'id');
-    users.value = response.data.content;
-    totalPages.value = response.data.totalPages;
-  } catch (err) {
-    error.value = 'Không thể tải danh sách người dùng: ' + (err.message || 'Lỗi không xác định');
-    console.error('Lỗi khi tải danh sách người dùng:', err);
+    isLoading.value = true;
+    let queryParams = '';
+    
+    if (searchQuery.value) {
+      queryParams += `search=${encodeURIComponent(searchQuery.value)}`;
+    }
+    
+    if (filterRole.value) {
+      queryParams += queryParams ? '&' : '';
+      queryParams += `role=${filterRole.value}`;
+    }
+    
+    if (filterStatus.value) {
+      queryParams += queryParams ? '&' : '';
+      queryParams += `active=${filterStatus.value}`;
+    }
+    
+    const data = await api.fetchUsers(
+      pagination.value.currentPage,
+      pagination.value.size,
+      'id,desc',
+      queryParams
+    );
+    
+    users.value = data.content || [];
+    pagination.value.totalPages = data.totalPages || 0;
+    pagination.value.totalElements = data.totalElements || 0;
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách người dùng:", error);
+    showError("Không thể tải danh sách người dùng");
   } finally {
-    loading.value = false;
+    isLoading.value = false;
   }
 };
 
-const changeRole = async (user) => {
-  if (isProcessing.value) return;
-  
-  isProcessing.value = true;
-  const newRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN';
-  
-  try {
-    await api.updateUserRole(user.id, newRole);
-    user.role = newRole;
-    showNotification(`Đã thay đổi vai trò người dùng thành ${newRole}`, 'success');
-  } catch (err) {
-    showNotification('Không thể thay đổi vai trò: ' + (err.message || 'Lỗi không xác định'), 'error');
-    console.error('Lỗi khi thay đổi vai trò:', err);
-  } finally {
-    isProcessing.value = false;
-  }
+// Format date
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
-const changeStatus = async (user) => {
-  if (isProcessing.value) return;
-  
-  isProcessing.value = true;
+// Tìm kiếm người dùng
+const searchUsers = () => {
+  pagination.value.currentPage = 0;
+  fetchUsers();
+};
+
+// Áp dụng bộ lọc
+const applyFilters = () => {
+  pagination.value.currentPage = 0;
+  fetchUsers();
+};
+
+// Xem chi tiết người dùng
+const viewUserDetail = (userId) => {
+  router.push(`/admin/users/detail/${userId}`);
+};
+
+// Thay đổi trạng thái người dùng (khóa/mở khóa)
+const toggleUserStatus = (user) => {
   const newStatus = !user.active;
+  const action = newStatus ? 'kích hoạt' : 'khóa';
   
-  try {
-    await api.updateUserStatus(user.id, newStatus);
-    user.active = newStatus;
-    showNotification(`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản người dùng`, 'success');
-  } catch (err) {
-    showNotification('Không thể thay đổi trạng thái: ' + (err.message || 'Lỗi không xác định'), 'error');
-    console.error('Lỗi khi thay đổi trạng thái:', err);
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const nextPage = () => {
-  if (hasNextPage.value) {
-    currentPage.value++;
-    fetchUsers();
-  }
-};
-
-const prevPage = () => {
-  if (currentPage.value > 0) {
-    currentPage.value--;
-    fetchUsers();
-  }
-};
-
-const showNotification = (message, type = 'success') => {
-  notification.value = {
-    show: true,
-    message,
-    type
+  confirmDialogConfig.value = {
+    title: `Xác nhận ${action} tài khoản`,
+    message: `Bạn có chắc chắn muốn ${action} tài khoản của người dùng "${user.fullName}" không?`,
+    callback: async () => {
+      try {
+        await api.updateUserStatus(user.id, newStatus);
+        user.active = newStatus;
+        success(`Đã ${action} tài khoản thành công`);
+      } catch (error) {
+        console.error(`Lỗi khi ${action} tài khoản:`, error);
+        showError(`Không thể ${action} tài khoản`);
+      }
+    }
   };
   
-  setTimeout(() => {
-    notification.value.show = false;
-  }, 3000);
+  showConfirmDialog.value = true;
 };
 
-// Lifecycle
-onMounted(() => {
-  fetchUsers();
+// Thay đổi vai trò người dùng
+const toggleUserRole = (user) => {
+  const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
+  const action = newRole === 'ADMIN' ? 'nâng cấp lên Admin' : 'hạ xuống User thường';
+  
+  confirmDialogConfig.value = {
+    title: `Xác nhận ${action}`,
+    message: `Bạn có chắc chắn muốn ${action} cho người dùng "${user.fullName}" không?`,
+    callback: async () => {
+      try {
+        await api.updateUserRole(user.id, newRole);
+        user.role = newRole;
+        success(`Đã ${action} thành công`);
+      } catch (error) {
+        console.error(`Lỗi khi ${action}:`, error);
+        showError(`Không thể ${action}`);
+      }
+    }
+  };
+  
+  showConfirmDialog.value = true;
+};
+
+// Hàm điều hướng trang
+const changePage = (page) => {
+  if (page >= 0 && page < pagination.value.totalPages) {
+    pagination.value.currentPage = page;
+    fetchUsers();
+  }
+};
+
+// Xử lý sự kiện từ confirm dialog
+const handleConfirm = () => {
+  if (confirmDialogConfig.value.callback) {
+    confirmDialogConfig.value.callback();
+  }
+  showConfirmDialog.value = false;
+};
+
+const handleCancel = () => {
+  showConfirmDialog.value = false;
+};
+
+// Kiểm tra quyền admin khi vào trang
+onMounted(async () => {
+  const isAdmin = await checkAdminRole();
+  if (isAdmin) {
+    currentUserIsAdmin.value = true;
+    fetchUsers();
+  } else {
+    router.push('/');
+  }
 });
 </script> 

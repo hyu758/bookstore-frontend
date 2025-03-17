@@ -50,7 +50,7 @@ const fetchProduct = async () => {
 };
 
 const addToCart = async () => {
-  if (!localStorage.getItem('accessToken')) {
+  if (!sessionStorage.getItem('accessToken')) {
     showError('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
     await new Promise(resolve => setTimeout(resolve, 1000));
     window.location.href = '/login';
@@ -63,7 +63,7 @@ const addToCart = async () => {
     const response = await fetch(`http://localhost:8080/api/cart/items/${product.value.productId}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
