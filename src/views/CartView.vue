@@ -114,32 +114,117 @@
             <!-- Địa chỉ nhận hàng -->
             <div class="mb-6">
               <h3 class="text-lg font-bold text-gray-800 mb-3">Địa chỉ nhận hàng</h3>
-              <div v-if="isLoadingAddress" class="text-gray-500">
-                <span class="material-icons animate-spin">sync</span>
-                Đang tải...
-              </div>
-              <div v-else-if="userAddress" class="flex items-start gap-2">
-                <span class="material-icons text-blue-600">location_on</span>
-                <div>
-                  <p class="text-gray-800">{{ userAddress }}</p>
-                  <router-link 
-                    to="/profile" 
-                    class="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center mt-2"
+              <div class="space-y-4">
+                <!-- Chọn địa chỉ -->
+                <div class="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    id="useUserAddress" 
+                    v-model="useUserAddress"
+                    class="w-5 h-5 text-blue-600 focus:ring-blue-500"
                   >
-                    <span class="material-icons text-sm mr-1">edit</span>
-                    Thay đổi địa chỉ
-                  </router-link>
+                  <label for="useUserAddress" class="ml-2 text-gray-700">
+                    Sử dụng thông tin từ tài khoản
+                  </label>
+                </div>
+
+                <!-- Form nhập thông tin mới -->
+                <div v-if="!useUserAddress" class="space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Họ tên người nhận</label>
+                    <input 
+                      type="text" 
+                      v-model="shippingName"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập họ tên người nhận"
+                    >
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                    <input 
+                      type="tel" 
+                      v-model="shippingPhone"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Nhập số điện thoại"
+                    >
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label>
+                    <textarea 
+                      v-model="shippingAddress"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="Nhập địa chỉ chi tiết"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- Hiển thị địa chỉ từ tài khoản -->
+                <div v-else>
+                  <div v-if="isLoadingAddress" class="text-gray-500">
+                    <span class="material-icons animate-spin">sync</span>
+                    Đang tải...
+                  </div>
+                  <div v-else-if="userAddress" class="flex items-start gap-2">
+                    <span class="material-icons text-blue-600">location_on</span>
+                    <div>
+                      <p class="text-gray-800">{{ userAddress }}</p>
+                      <router-link 
+                        to="/profile" 
+                        class="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center mt-2"
+                      >
+                        <span class="material-icons text-sm mr-1">edit</span>
+                        Thay đổi địa chỉ
+                      </router-link>
+                    </div>
+                  </div>
+                  <div v-else class="text-gray-500">
+                    <p>Bạn chưa có địa chỉ nhận hàng</p>
+                    <router-link 
+                      to="/profile" 
+                      class="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center mt-2"
+                    >
+                      <span class="material-icons text-sm mr-1">add</span>
+                      Thêm địa chỉ
+                    </router-link>
+                  </div>
                 </div>
               </div>
-              <div v-else class="text-gray-500">
-                <p>Bạn chưa có địa chỉ nhận hàng</p>
-                <router-link 
-                  to="/profile" 
-                  class="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center mt-2"
-                >
-                  <span class="material-icons text-sm mr-1">add</span>
-                  Thêm địa chỉ
-                </router-link>
+            </div>
+
+            <!-- Phương thức thanh toán -->
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-gray-800 mb-3">Phương thức thanh toán</h3>
+              <div class="space-y-3">
+                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition" :class="{ 'border-blue-500 bg-blue-50': paymentMethod === 'COD' }">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="COD" 
+                    v-model="paymentMethod"
+                    class="w-5 h-5 text-blue-600 focus:ring-blue-500"
+                  >
+                  <span class="material-icons ml-3 text-gray-700">local_shipping</span>
+                  <div class="ml-3">
+                    <p class="font-medium text-gray-800">Thanh toán khi nhận hàng (COD)</p>
+                    <p class="text-sm text-gray-500">Thanh toán bằng tiền mặt khi nhận hàng</p>
+                  </div>
+                </label>
+                
+                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition" :class="{ 'border-blue-500 bg-blue-50': paymentMethod === 'VNPAY' }">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="VNPAY" 
+                    v-model="paymentMethod"
+                    class="w-5 h-5 text-blue-600 focus:ring-blue-500"
+                  >
+                  <span class="material-icons ml-3 text-gray-700">credit_card</span>
+                  <div class="ml-3">
+                    <p class="font-medium text-gray-800">Thanh toán qua VNPay</p>
+                    <p class="text-sm text-gray-500">Thanh toán an toàn với VNPay</p>
+                  </div>
+                </label>
               </div>
             </div>
 
@@ -166,10 +251,15 @@
             <!-- Nút đặt hàng -->
             <button 
               class="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              :disabled="!selectedItems.length || !userAddress"
+              :disabled="!selectedItems.length || (!useUserAddress && (!shippingName || !shippingPhone || !shippingAddress)) || !paymentMethod"
               @click="checkout"
             >
-              {{ !userAddress ? 'Vui lòng thêm địa chỉ nhận hàng' : 'Tiến hành đặt hàng' }}
+              {{ !selectedItems.length ? 'Vui lòng chọn sản phẩm' : 
+                 !useUserAddress && !shippingName ? 'Vui lòng nhập họ tên người nhận' :
+                 !useUserAddress && !shippingPhone ? 'Vui lòng nhập số điện thoại' :
+                 !useUserAddress && !shippingAddress ? 'Vui lòng nhập địa chỉ nhận hàng' :
+                 !paymentMethod ? 'Vui lòng chọn phương thức thanh toán' :
+                 'Tiến hành đặt hàng' }}
             </button>
           </div>
         </div>
@@ -183,15 +273,18 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useApi } from '@/composables/useApi';
 import { useNotify } from '@/composables/notify';
+import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
 const api = useApi();
 const { success, error: showError, confirm } = useNotify();
+const { getToken, isTokenExpired } = useAuth();
 const couponCode = ref('');
 const userAddress = ref('');
 const isLoadingAddress = ref(false);
 const isLoadingCart = ref(false);
 const cartItems = ref([]);
+const paymentMethod = ref('COD'); // Mặc định là thanh toán COD
 
 // Thêm ref để theo dõi các thay đổi
 const hasChanges = ref(false);
@@ -221,6 +314,12 @@ const shippingFee = computed(() => {
 const total = computed(() => {
   return subtotal.value - discount.value + shippingFee.value;
 });
+
+// Thêm các ref mới
+const useUserAddress = ref(true);
+const shippingName = ref('');
+const shippingPhone = ref('');
+const shippingAddress = ref('');
 
 // Methods
 const formatPrice = (price) => {
@@ -351,8 +450,44 @@ const applyCoupon = async () => {
   couponCode.value = '';
 };
 
+const redirectToPayment = (url) => {
+  success('Bạn sẽ được chuyển đến trang thanh toán VNPay trong giây lát...');
+  setTimeout(() => {
+    window.location.href = url;
+  }, 2000);
+};
+
+const removeSelectedItems = async () => {
+  try {
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      return;
+    }
+    
+    // Xóa từng sản phẩm đã chọn khỏi giỏ hàng
+    await Promise.all(
+      selectedItems.value.map(item => 
+        fetch(`http://localhost:8080/api/cart/items/${item.productId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': '*/*'
+          }
+        })
+      )
+    );
+    
+    // Cập nhật lại danh sách sản phẩm trong giỏ hàng
+    cartItems.value = cartItems.value.filter(item => !item.selected);
+    
+    // Kích hoạt sự kiện để cập nhật giỏ hàng ở header
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+  } catch (error) {
+    console.error('Lỗi khi xóa sản phẩm khỏi giỏ hàng:', error);
+  }
+};
+
 const checkout = async () => {
-  // Lưu các thay đổi trước khi đặt hàng
   if (hasChanges.value) {
     await saveChanges();
   }
@@ -365,15 +500,21 @@ const checkout = async () => {
       return;
     }
     
+    // 1. Tạo đơn hàng trước
     const orderData = {
-      items: selectedItems.value.map(item => ({
+      orderDetails: selectedItems.value.map(item => ({
         productId: item.productId,
         quantity: item.quantity
       })),
-      address: userAddress.value
+      useUserAddress: useUserAddress.value,
+      ...(useUserAddress.value ? {} : {
+        shippingName: shippingName.value,
+        shippingPhone: shippingPhone.value,
+        shippingAddress: shippingAddress.value
+      })
     };
     
-    const response = await fetch('http://localhost:8080/api/orders', {
+    const orderResponse = await fetch('http://localhost:8080/api/orders', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -382,15 +523,117 @@ const checkout = async () => {
       body: JSON.stringify(orderData)
     });
 
-    if (response.ok) {
-      router.push('/checkout');
-    } else {
-      const errorData = await response.json();
+    if (!orderResponse.ok) {
+      const errorData = await orderResponse.json();
       throw new Error(errorData.message || 'Lỗi khi tạo đơn hàng');
     }
+
+    const orderResult = await orderResponse.json();
+    if (orderResult.success) {
+      const orderId = orderResult.data.orderId;
+
+      // 2. Gọi API payment với orderId và paymentMethod
+      if (paymentMethod.value === 'VNPAY') {
+        const paymentData = {
+          orderId: orderId,
+          paymentMethod: 'VNPAY'
+        };
+
+        const paymentResponse = await fetch('http://localhost:8080/api/payment/order', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(paymentData)
+        });
+
+        if (paymentResponse.ok) {
+          const paymentResult = await paymentResponse.json();
+          
+          // Xóa các sản phẩm đã chọn khỏi giỏ hàng
+          await removeSelectedItems();
+          
+          if (paymentResult.paymentUrl) {
+            redirectToPayment(paymentResult.paymentUrl);
+          } else {
+            throw new Error('Không nhận được URL thanh toán');
+          }
+        } else {
+          const errorData = await paymentResponse.json();
+          throw new Error(errorData.message || 'Lỗi khi tạo thanh toán');
+        }
+      } else {
+        // Nếu là COD thì vẫn gọi API payment nhưng với method là COD
+        const paymentData = {
+          orderId: orderId,
+          paymentMethod: 'COD'
+        };
+
+        await fetch('http://localhost:8080/api/payment/order', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(paymentData)
+        });
+
+        // Xóa các sản phẩm đã chọn khỏi giỏ hàng
+        await removeSelectedItems();
+
+        // Chuyển đến trang xác nhận đơn hàng
+        success('Đặt hàng thành công!');
+        router.push('/orders/' + orderId);
+      }
+    } else {
+      throw new Error(orderResult.message || 'Đặt hàng không thành công');
+    }
   } catch (error) {
-    console.error('Lỗi khi tạo đơn hàng:', error);
-    showError('Có lỗi xảy ra khi tạo đơn hàng: ' + (error.message || 'Vui lòng thử lại sau'));
+    console.error('Lỗi khi xử lý đơn hàng:', error);
+    showError('Có lỗi xảy ra: ' + (error.message || 'Vui lòng thử lại sau'));
+  }
+};
+
+const processVNPayPayment = async (orderId) => {
+  try {
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
+      return false;
+    }
+    
+    const paymentData = {
+      orderId: orderId,
+      paymentMethod: 'VNPAY'
+    };
+
+    const response = await fetch('http://localhost:8080/api/payment/order', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(paymentData)
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.paymentUrl) {
+        redirectToPayment(data.paymentUrl);
+        return true;
+      } else {
+        throw new Error('Không nhận được URL thanh toán');
+      }
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Không thể tạo thanh toán VNPay');
+    }
+  } catch (error) {
+    console.error('Lỗi khi tạo thanh toán VNPay:', error);
+    showError('Lỗi khi tạo thanh toán VNPay: ' + (error.message || 'Vui lòng thử lại sau'));
+    return false;
   }
 };
 
@@ -413,7 +656,7 @@ const fetchUserAddress = async () => {
         'Accept': '*/*'
       }
     });
-    
+    console.log(response);
     if (!response.ok) {
       throw new Error('Không thể lấy thông tin người dùng');
     }
@@ -438,9 +681,16 @@ const fetchUserAddress = async () => {
 const fetchCart = async () => {
   try {
     isLoadingCart.value = true;
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      showError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      router.push('/login');
+      return;
+    }
+    
     const response = await fetch('http://localhost:8080/api/cart', {
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+        Authorization: `Bearer ${token}`,
         Accept: "*/*"
       }
     });

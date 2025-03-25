@@ -95,6 +95,12 @@ const router = createRouter({
       path: '/books/category/:categoryId',
       name: 'books-by-category',
       component: BooksView
+    },
+    {
+      path: '/orders/history',
+      name: 'orderHistory',
+      component: () => import('@/views/OrderHistory.vue'),
+      meta: { requiresAuth: true }
     }
   ],
 })

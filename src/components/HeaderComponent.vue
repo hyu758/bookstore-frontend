@@ -212,7 +212,6 @@ const logout = () => {
             class="text-gray-600 hover:text-blue-600 flex items-center space-x-1"
           >
             <span class="material-icons">menu_book</span>
-            <span class="hidden md:inline">Sách</span>
           </RouterLink>
 
           <!-- Menu khi chưa đăng nhập -->
@@ -253,6 +252,15 @@ const logout = () => {
               title="Liên hệ"
             >
               <span class="material-icons">contact_support</span>
+            </RouterLink>
+
+            <!-- Order History -->
+            <RouterLink 
+              to="/orders/history" 
+              class="text-gray-600 hover:text-blue-600"
+              title="Lịch sử đơn hàng"
+            >
+              <span class="material-icons">history</span>
             </RouterLink>
 
             <!-- Giỏ hàng (chỉ hiện cho user thường) -->
