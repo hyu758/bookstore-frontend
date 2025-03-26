@@ -330,9 +330,8 @@ export const useApi = () => {
       if (!response.ok) {
         throw new Error('Không thể lấy danh sách người dùng');
       }
-      
       const data = await response.json();
-      return data.data;
+      return data;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách người dùng:", error);
       throw error;

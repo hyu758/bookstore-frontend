@@ -62,8 +62,8 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition duration-150">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.id }}</td>
+              <tr v-for="user in users" :key="user.userId" class="hover:bg-gray-50 transition duration-150">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.userId }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -94,7 +94,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex items-center justify-end space-x-3">
-                    <button @click="viewUserDetail(user.id)"
+                    <button @click="viewUserDetail(user.userId)"
                       class="text-indigo-600 hover:text-indigo-800 transition duration-150 flex items-center space-x-1">
                       <span class="material-icons text-sm">visibility</span>
                       <span>Chi tiết</span>
@@ -218,10 +218,10 @@ const fetchUsers = async () => {
     const data = await api.fetchUsers(
       pagination.value.currentPage,
       pagination.value.size,
-      'id,desc',
+      'userId,desc',
       queryParams
     );
-    
+    console.log(data);
     users.value = data.content || [];
     pagination.value.totalPages = data.totalPages || 0;
     pagination.value.totalElements = data.totalElements || 0;
@@ -273,7 +273,31 @@ const toggleUserStatus = (user) => {
     message: `Bạn có chắc chắn muốn ${action} tài khoản của người dùng "${user.fullName}" không?`,
     callback: async () => {
       try {
-        await api.updateUserStatus(user.id, newStatus);
+        const token = sessionStorage.getItem("accessToken");
+        const response = await fetch(`http://localhost:8080/api/admin/users/${user.userId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: user.userId,
+            username: user.username,
+            email: user.email,
+            fullName: user.fullName,
+            phoneNumber: user.phoneNumber,
+            address: user.address,
+            role: user.role,
+            registrationDate: user.registrationDate,
+            password: user.password,
+            active: newStatus
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Không thể ${action} tài khoản`);
+        }
+
         user.active = newStatus;
         success(`Đã ${action} tài khoản thành công`);
       } catch (error) {
@@ -296,7 +320,7 @@ const toggleUserRole = (user) => {
     message: `Bạn có chắc chắn muốn ${action} cho người dùng "${user.fullName}" không?`,
     callback: async () => {
       try {
-        await api.updateUserRole(user.id, newRole);
+        await api.updateUserRole(user.userId, newRole);
         user.role = newRole;
         success(`Đã ${action} thành công`);
       } catch (error) {

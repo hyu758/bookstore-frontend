@@ -254,88 +254,88 @@ const logout = () => {
               <span class="material-icons">contact_support</span>
             </RouterLink>
 
-            <!-- Order History -->
-            <RouterLink 
-              to="/orders/history" 
-              class="text-gray-600 hover:text-blue-600"
-              title="Lịch sử đơn hàng"
-            >
-              <span class="material-icons">history</span>
-            </RouterLink>
-
-            <!-- Giỏ hàng (chỉ hiện cho user thường) -->
-            <div 
-              v-if="!isAdmin"
-              class="text-gray-600 hover:text-blue-600 relative cart-dropdown"
-            >
+            <!-- Giỏ hàng và Order History (chỉ hiện cho user thường) -->
+            <div v-if="!isAdmin">
+              <!-- Order History -->
               <RouterLink 
-                to="/cart" 
-                title="Giỏ hàng"
-                @mouseenter="handleCartMouseEnter"
+                to="/orders/history" 
+                class="text-gray-600 hover:text-blue-600"
+                title="Lịch sử đơn hàng"
               >
-                <span class="material-icons">shopping_cart</span>
-                <!-- Badge số lượng trong giỏ hàng -->
-                <span 
-                  v-if="cartItemCount > 0"
-                  class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                >
-                  {{ cartItemCount }}
-                </span>
+                <span class="material-icons">history</span>
               </RouterLink>
-              
-              <!-- Dropdown giỏ hàng mini -->
-              <div 
-                v-if="showCartDropdown" 
-                class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-50 py-2 cart-dropdown-menu"
-                @mouseenter="showCartDropdown = true"
-                @mouseleave="showCartDropdown = false"
-              >
-                <div class="px-4 py-2 border-b border-gray-200">
-                  <h3 class="font-medium text-gray-800">Giỏ hàng của bạn</h3>
-                </div>
-                
-                <!-- Loading state -->
-                <div v-if="!isCartLoaded" class="px-4 py-3 text-center">
-                  <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                  <p class="text-sm text-gray-500">Đang tải giỏ hàng...</p>
-                </div>
-                
-                <!-- Empty cart -->
-                <div v-else-if="cartItems.length === 0" class="px-4 py-3 text-gray-500 text-center">
-                  Giỏ hàng trống
-                </div>
-                
-                <!-- Cart items -->
-                <div v-else class="max-h-64 overflow-y-auto">
-                  <div 
-                    v-for="item in cartItems" 
-                    :key="item.cartDetailId"
-                    class="px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+
+              <!-- Giỏ hàng -->
+              <div class="text-gray-600 hover:text-blue-600 relative cart-dropdown">
+                <RouterLink 
+                  to="/cart" 
+                  title="Giỏ hàng"
+                  @mouseenter="handleCartMouseEnter"
+                >
+                  <span class="material-icons">shopping_cart</span>
+                  <!-- Badge số lượng trong giỏ hàng -->
+                  <span 
+                    v-if="cartItemCount > 0"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
                   >
-                    <img 
-                      :src="item.imageUrl" 
-                      :alt="item.name"
-                      class="w-10 h-10 object-cover rounded"
-                    />
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-gray-800 truncate">{{ item.name }}</p>
-                      <p class="text-xs text-gray-500">{{ item.quantity }} x {{ formatPrice(item.price) }}</p>
+                    {{ cartItemCount }}
+                  </span>
+                </RouterLink>
+                
+                <!-- Dropdown giỏ hàng mini -->
+                <div 
+                  v-if="showCartDropdown" 
+                  class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg z-50 py-2 cart-dropdown-menu"
+                  @mouseenter="showCartDropdown = true"
+                  @mouseleave="showCartDropdown = false"
+                >
+                  <div class="px-4 py-2 border-b border-gray-200">
+                    <h3 class="font-medium text-gray-800">Giỏ hàng của bạn</h3>
+                  </div>
+                  
+                  <!-- Loading state -->
+                  <div v-if="!isCartLoaded" class="px-4 py-3 text-center">
+                    <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                    <p class="text-sm text-gray-500">Đang tải giỏ hàng...</p>
+                  </div>
+                  
+                  <!-- Empty cart -->
+                  <div v-else-if="cartItems.length === 0" class="px-4 py-3 text-gray-500 text-center">
+                    Giỏ hàng trống
+                  </div>
+                  
+                  <!-- Cart items -->
+                  <div v-else class="max-h-64 overflow-y-auto">
+                    <div 
+                      v-for="item in cartItems" 
+                      :key="item.cartDetailId"
+                      class="px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <img 
+                        :src="item.imageUrl" 
+                        :alt="item.name"
+                        class="w-10 h-10 object-cover rounded"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">{{ item.name }}</p>
+                        <p class="text-xs text-gray-500">{{ item.quantity }} x {{ formatPrice(item.price) }}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <!-- Cart total and checkout button -->
-                <div v-if="isCartLoaded && cartItems.length > 0" class="px-4 py-2 border-t border-gray-200">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="font-medium text-gray-800">Tổng cộng:</span>
-                    <span class="font-bold text-blue-600">{{ formatPrice(cartTotal) }}</span>
+                  
+                  <!-- Cart total and checkout button -->
+                  <div v-if="isCartLoaded && cartItems.length > 0" class="px-4 py-2 border-t border-gray-200">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="font-medium text-gray-800">Tổng cộng:</span>
+                      <span class="font-bold text-blue-600">{{ formatPrice(cartTotal) }}</span>
+                    </div>
+                    <RouterLink 
+                      to="/cart" 
+                      class="block w-full bg-blue-600 text-white text-center py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Xem giỏ hàng
+                    </RouterLink>
                   </div>
-                  <RouterLink 
-                    to="/cart" 
-                    class="block w-full bg-blue-600 text-white text-center py-2 rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Xem giỏ hàng
-                  </RouterLink>
                 </div>
               </div>
             </div>
