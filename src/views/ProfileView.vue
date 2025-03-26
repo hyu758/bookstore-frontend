@@ -43,11 +43,10 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
               <input
-                :value="profile.phoneNumber"
+                v-model="profile.phoneNumber"
                 type="text"
-                disabled
-                class="bg-gray-100 border border-gray-200 text-gray-500 text-sm rounded-lg block w-full p-2.5"
-                placeholder="Số điện thoại"
+                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Nhập số điện thoại"
               />
             </div>
   
@@ -110,9 +109,18 @@
         },
       });
   
-      console.log(response.data);
+      console.log("Profile data from API:", response.data);
       if (response.data.success) {
-        profile.value = response.data.data;
+        const userData = response.data.data;
+        profile.value = {
+          fullName: userData.fullName,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber || "", // Đảm bảo có giá trị mặc định
+          address: userData.address || "",
+          currentPassword: "",
+          newPassword: "",
+        };
+        console.log("Mapped profile data:", profile.value);
       } else {
         errorMessage.value = "Không thể lấy thông tin hồ sơ.";
       }
@@ -132,8 +140,10 @@
       const updateData = {
         fullName: profile.value.fullName,
         address: profile.value.address,
+        phoneNumber: profile.value.phoneNumber || null, // Đảm bảo gửi null nếu không có giá trị
       };
   
+      console.log("Sending update data:", updateData);
       const response = await axios.put("http://localhost:8080/api/users/profile", updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -141,6 +151,7 @@
         },
       });
   
+      console.log("Update response:", response.data);
       if (response.data.success) {
         successMessage.value = "Cập nhật hồ sơ thành công!";
         errorMessage.value = "";

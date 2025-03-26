@@ -274,25 +274,26 @@ const toggleUserStatus = (user) => {
     callback: async () => {
       try {
         const token = sessionStorage.getItem("accessToken");
-        const response = await fetch(`http://localhost:8080/api/admin/users/${user.userId}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            userId: user.userId,
-            username: user.username,
-            email: user.email,
-            fullName: user.fullName,
-            phoneNumber: user.phoneNumber,
-            address: user.address,
-            role: user.role,
-            registrationDate: user.registrationDate,
-            password: user.password,
-            active: newStatus
-          })
-        });
+        let response;
+        
+        if (newStatus) {
+          // Kích hoạt tài khoản
+          response = await fetch(`http://localhost:8080/api/admin/users/${user.userId}/activate`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        } else {
+          // Khóa tài khoản
+          response = await fetch(`http://localhost:8080/api/admin/users/${user.userId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        }
         
         if (!response.ok) {
           throw new Error(`Không thể ${action} tài khoản`);

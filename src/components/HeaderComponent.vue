@@ -254,8 +254,8 @@ const logout = () => {
               <span class="material-icons">contact_support</span>
             </RouterLink>
 
-            <!-- Giỏ hàng và Order History (chỉ hiện cho user thường) -->
-            <div v-if="!isAdmin">
+            <!-- Menu chỉ dành cho user thường -->
+            <template v-if="!isAdmin">
               <!-- Order History -->
               <RouterLink 
                 to="/orders/history" 
@@ -338,7 +338,7 @@ const logout = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
 
             <!-- Profile -->
             <RouterLink 
