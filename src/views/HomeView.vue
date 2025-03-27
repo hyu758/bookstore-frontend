@@ -7,9 +7,11 @@
           <div class="md:w-1/2 mb-8 md:mb-0">
             <h1 class="text-4xl font-bold mb-4">Chào mừng đến với BookZen</h1>
             <p class="text-lg mb-6">Khám phá kho tàng sách phong phú với hàng nghìn đầu sách đa dạng.</p>
-            <button class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-              Khám phá ngay
+            <a href="/books">
+              <button class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                Khám phá ngay
             </button>
+            </a>
           </div>
           <div class="md:w-1/2">
             <img src="/src/assets/slider_1.webp" alt="Hero" class="rounded-lg shadow-lg" />
@@ -29,7 +31,6 @@
             <div class="flex flex-col items-center text-center">
               <span class="material-icons text-4xl text-blue-600 mb-2">{{ getCategoryIcon(category.name) }}</span>
               <h3 class="font-medium text-gray-800">{{ category.name }}</h3>
-              <p class="text-sm text-gray-500">{{ category.productCount || 0 }} sách</p>
             </div>
           </div>
         </div>
@@ -61,7 +62,10 @@
       <section class="mb-12">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Sách mới</h2>
-          <button class="text-blue-600 hover:text-blue-700 flex items-center">
+          <button 
+            @click="router.push('/books')" 
+            class="text-blue-600 hover:text-blue-700 flex items-center"
+          >
             Xem tất cả
             <span class="material-icons ml-1">arrow_forward</span>
           </button>
@@ -146,6 +150,10 @@ const getCategoryIcon = (categoryName) => {
     'Sách giáo dục': 'school',
     'Sách khoa học': 'science',
     'Sách lịch sử': 'history_edu',
+    'Sách kỹ năng sống': 'self_improvement',
+    'Triết học': 'psychology_alt',
+    'Tâm lý học': 'psychology',
+    'Sách tiếng việt': 'language',
     'default': 'menu_book'
   };
   return icons[categoryName] || icons.default;

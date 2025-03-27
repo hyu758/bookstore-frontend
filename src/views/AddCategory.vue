@@ -49,7 +49,7 @@
   // Thêm danh mục mới
   const addCategory = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       const response = await axios.post(
         "http://localhost:8080/api/categories",
         { name: newCategoryName.value },

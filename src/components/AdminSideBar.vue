@@ -47,30 +47,8 @@
       </RouterLink>
     </nav>
 
-    <!-- User Profile -->
-    <div class="absolute bottom-0 w-64 border-t border-gray-800">
-      <div class="px-6 py-4">
-        <button 
-          @click="handleLogout"
-          class="flex items-center text-gray-400 hover:text-white transition-colors duration-200"
-        >
-          <span class="material-icons mr-3">logout</span>
-          <span class="font-medium">Đăng xuất</span>
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-
-const router = useRouter();
-const { setToken } = useAuth();
-
-const handleLogout = () => {
-  setToken(null);
-  router.push('/login');
-};
 </script>
