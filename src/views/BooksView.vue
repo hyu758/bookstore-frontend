@@ -30,6 +30,7 @@
           
           <!-- Kết quả lọc -->
           <AppliedFilters 
+            v-memo="[appliedFilters]"
             :appliedFilters="appliedFilters"
             @remove-filter="removeFilter"
             @clear-all-filters="clearAllFilters"
@@ -40,6 +41,7 @@
             <BookCard
               v-for="product in filteredProducts"
               :key="product.productId"
+              v-memo="[product.productId, product.price, product.discount, product.stockQuantity]"
               :book="product"
               @add-to-cart="handleAddToCart"
             />
@@ -72,6 +74,7 @@
               <button 
                 v-for="page in displayedPages" 
                 :key="page"
+                v-memo="[page, currentPage]"
                 @click="changePage(page)"
                 class="px-3 py-1 rounded-md border"
                 :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-100'"

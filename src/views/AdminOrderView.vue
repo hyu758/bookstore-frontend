@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen bg-gray-100">
     <AdminSideBar></AdminSideBar>
-    
+
     <div class="flex-1 p-6 bg-gray-100 overflow-auto">
       <div class="mb-6">
         <h2 class="text-2xl font-semibold text-gray-800">Quản lý đơn hàng</h2>
@@ -25,16 +25,24 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đơn hàng</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đơn hàng
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác
+                  </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="order in orders" :key="order.orderId" class="hover:bg-gray-50">
+                <tr v-for="order in orders" :key="order.orderId"
+                  v-memo="[order.orderId, order.shippingName, order.shippingPhone, order.shippingAddress, order.orderDate, order.totalAmount, order.status]"
+                  class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">#{{ order.orderId }}</div>
                   </td>
@@ -62,10 +70,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <button 
-                      @click="viewOrderDetails(order.orderId)"
-                      class="text-blue-600 hover:text-blue-900 mr-3"
-                    >
+                    <button @click="viewOrderDetails(order.orderId)" class="text-blue-600 hover:text-blue-900 mr-3">
                       <span class="material-icons" style="font-size: 20px;">visibility</span>
                     </button>
                   </td>
@@ -78,28 +83,20 @@
         <!-- Pagination -->
         <div class="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
-            <button 
-              @click="changePage(currentPage - 1)"
-              :disabled="currentPage === 0"
-              :class="[
-                'relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md',
-                currentPage === 0 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              ]"
-            >
+            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0" :class="[
+              'relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md',
+              currentPage === 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            ]">
               Trước
             </button>
-            <button 
-              @click="changePage(currentPage + 1)"
-              :disabled="currentPage >= totalPages - 1"
-              :class="[
-                'relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md',
-                currentPage >= totalPages - 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              ]"
-            >
+            <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1" :class="[
+              'relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md',
+              currentPage >= totalPages - 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            ]">
               Sau
             </button>
           </div>
@@ -113,35 +110,24 @@
             </div>
             <div>
               <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <button
-                  @click="changePage(currentPage - 1)"
-                  :disabled="currentPage === 0"
+                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0"
                   class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                  :class="{ 'cursor-not-allowed': currentPage === 0 }"
-                >
+                  :class="{ 'cursor-not-allowed': currentPage === 0 }">
                   <span class="sr-only">Trang trước</span>
                   <span class="material-icons" style="font-size: 20px;">chevron_left</span>
                 </button>
-                <button
-                  v-for="page in displayedPages"
-                  :key="page"
-                  @click="changePage(page)"
-                  :class="[
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold',
-                    page === currentPage
-                      ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0',
-                    page === '...' ? 'cursor-default' : 'cursor-pointer'
-                  ]"
-                >
+                <button v-for="page in displayedPages" :key="page" @click="changePage(page)" :class="[
+                  'relative inline-flex items-center px-4 py-2 text-sm font-semibold',
+                  page === currentPage
+                    ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0',
+                  page === '...' ? 'cursor-default' : 'cursor-pointer'
+                ]">
                   {{ page + 1 }}
                 </button>
-                <button
-                  @click="changePage(currentPage + 1)"
-                  :disabled="currentPage >= totalPages - 1"
+                <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1"
                   class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                  :class="{ 'cursor-not-allowed': currentPage >= totalPages - 1 }"
-                >
+                  :class="{ 'cursor-not-allowed': currentPage >= totalPages - 1 }">
                   <span class="sr-only">Trang sau</span>
                   <span class="material-icons" style="font-size: 20px;">chevron_right</span>
                 </button>
@@ -184,7 +170,7 @@ const endItem = computed(() => {
 const displayedPages = computed(() => {
   const pages = []
   const maxPages = 5 // Số trang hiển thị tối đa
-  
+
   if (totalPages.value <= maxPages) {
     // Nếu tổng số trang ít hơn hoặc bằng maxPages, hiển thị tất cả
     for (let i = 0; i < totalPages.value; i++) {
@@ -193,30 +179,30 @@ const displayedPages = computed(() => {
   } else {
     // Luôn hiển thị trang đầu
     pages.push(0)
-    
+
     // Tính toán range xung quanh trang hiện tại
     let start = Math.max(1, currentPage.value - 1)
     let end = Math.min(totalPages.value - 2, currentPage.value + 1)
-    
+
     // Thêm dấu ... nếu cần
     if (start > 1) {
       pages.push('...')
     }
-    
+
     // Thêm các trang ở giữa
     for (let i = start; i <= end; i++) {
       pages.push(i)
     }
-    
+
     // Thêm dấu ... nếu cần
     if (end < totalPages.value - 2) {
       pages.push('...')
     }
-    
+
     // Luôn hiển thị trang cuối
     pages.push(totalPages.value - 1)
   }
-  
+
   return pages
 })
 
@@ -235,9 +221,9 @@ const formatPrice = (price) => {
 }
 
 const formatDate = (dateString) => {
-  const options = { 
-    year: 'numeric', 
-    month: '2-digit', 
+  const options = {
+    year: 'numeric',
+    month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
@@ -267,7 +253,7 @@ const fetchOrders = async () => {
   try {
     isLoading.value = true
     error.value = null
-    
+
     const token = getToken()
     const response = await axios.get('http://localhost:8080/api/orders/admin/all', {
       params: {
@@ -279,7 +265,7 @@ const fetchOrders = async () => {
         'Accept': '*/*'
       }
     })
-    
+
     const data = response.data.data
     orders.value = data.content
     totalPages.value = data.totalPages
@@ -295,4 +281,4 @@ const fetchOrders = async () => {
 onMounted(() => {
   fetchOrders()
 })
-</script> 
+</script>

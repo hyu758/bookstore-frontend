@@ -29,7 +29,9 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="category in categories" :key="category.id" class="hover:bg-gray-50 transition duration-150">
+                <tr v-for="category in categories" :key="category.id"
+                v-memo="[category.categoryId, category.name]"
+                 class="hover:bg-gray-50 transition duration-150">
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.categoryId }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.name }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -98,7 +100,9 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="product in products" :key="product.productId" class="hover:bg-gray-50 transition duration-150">
+                <tr v-for="product in products" :key="product.productId"
+                v-memo="[product.productId, product.name, product.author, product.price, product.discount, product.soldCount, product.stockQuantity, product.publicationYear]"
+                 class="hover:bg-gray-50 transition duration-150">
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.productId }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div class="flex items-center">

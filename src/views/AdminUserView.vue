@@ -62,7 +62,9 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="user in users" :key="user.userId" class="hover:bg-gray-50 transition duration-150">
+              <tr v-for="user in users" :key="user.userId" 
+              v-memo="[user.userId, user.fullName, user.email, user.phoneNumber, user.role, user.active, user.createdAt]"
+              class="hover:bg-gray-50 transition duration-150">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.userId }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">

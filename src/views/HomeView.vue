@@ -25,7 +25,9 @@
       <section class="mb-12">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Danh mục sách</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div v-for="category in categories" :key="category.categoryId" 
+          <div v-for="category in categories" 
+               :key="category.categoryId" 
+               v-memo="[category.categoryId, category.name]"
                @click="goToCategoryPage(category.categoryId)"
                class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer">
             <div class="flex flex-col items-center text-center">
@@ -52,6 +54,7 @@
           <BookCard
             v-for="product in topProducts"
             :key="product.productId"
+            v-memo="[product.productId, product.price, product.discount, product.stockQuantity]"
             :book="product"
             @add-to-cart="handleAddToCart"
           />
@@ -74,6 +77,7 @@
           <BookCard
             v-for="product in newProducts"
             :key="product.productId"
+            v-memo="[product.productId, product.price, product.discount, product.stockQuantity]"
             :book="product"
             @add-to-cart="handleAddToCart"
           />

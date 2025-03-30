@@ -51,7 +51,10 @@
 
       <!-- Danh sách đơn hàng -->
       <div v-else-if="orders.length > 0" class="space-y-4">
-        <div v-for="order in orders" :key="order.orderId" class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div v-for="order in orders" 
+             :key="order.orderId" 
+             v-memo="[order.orderId, order.status, order.totalAmount]"
+             class="bg-white rounded-lg shadow-sm overflow-hidden">
           <!-- Chi tiết đơn hàng -->
           <div class="divide-y">
             <!-- Header đơn hàng -->
@@ -97,7 +100,9 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200">
-                    <tr v-for="item in order.orderDetails" :key="item.orderDetailId">
+                    <tr v-for="item in order.orderDetails" 
+                        :key="item.orderDetailId"
+                        v-memo="[item.orderDetailId, item.quantity, item.price]">
                       <td class="p-2">
                         <div class="flex items-center gap-3">
                           <img 
@@ -168,6 +173,7 @@
               <button 
                 v-for="page in displayedPages" 
                 :key="page"
+                v-memo="[page, currentPage]"
                 @click="changePage(page)"
                 :class="{
                   'px-4 py-2 rounded-md': true,
