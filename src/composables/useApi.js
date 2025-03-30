@@ -45,7 +45,6 @@ export const useApi = () => {
       const response = await axios.get(
         `${API_URL}/products?page=${page}&size=${size}&sort=${sort}`
       );
-      console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách sách:", error);
@@ -115,12 +114,11 @@ export const useApi = () => {
         isbn: productData.isbn || ""
       };
 
-      console.log('Sending updated product data:', JSON.stringify(formattedData, null, 2));
       
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          ...getAuthHeaders(),
           'Content-Type': 'application/json',
           Accept: "*/*"
         },
@@ -170,7 +168,6 @@ export const useApi = () => {
         isbn: "" // Để trống vì không yêu cầu từ form
       };
 
-      console.log('Sending product data:', JSON.stringify(formattedData, null, 2));
       
       const response = await axios.post(
         `${API_URL}/products`,

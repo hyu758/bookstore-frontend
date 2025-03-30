@@ -221,7 +221,6 @@ const fetchUsers = async () => {
       'userId,desc',
       queryParams
     );
-    console.log(data);
     users.value = data.content || [];
     pagination.value.totalPages = data.totalPages || 0;
     pagination.value.totalElements = data.totalElements || 0;

@@ -101,6 +101,24 @@ const router = createRouter({
       name: 'orderHistory',
       component: () => import('@/views/OrderHistory.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment-success',
+      name: 'PaymentSuccess',
+      component: () => import('../views/PaymentSuccess.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment-failed', 
+      name: 'PaymentFailed',
+      component: () => import('../views/PaymentFailed.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/orders',
+      name: 'AdminOrders',
+      component: () => import('../views/AdminOrderView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
     }
   ],
 })

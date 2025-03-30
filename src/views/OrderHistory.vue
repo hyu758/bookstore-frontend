@@ -52,63 +52,103 @@
       <!-- Danh sách đơn hàng -->
       <div v-else-if="orders.length > 0" class="space-y-4">
         <div v-for="order in orders" :key="order.orderId" class="bg-white rounded-lg shadow-sm overflow-hidden">
-          <!-- Header đơn hàng -->
-          <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-            <div>
-              <p class="text-sm text-gray-500">Mã đơn hàng: 
-                <span class="font-medium text-gray-800">#{{ order.orderId }}</span>
-              </p>
-              <p class="text-sm text-gray-500">Ngày đặt: 
-                <span class="font-medium text-gray-800">{{ formatDate(order.orderDate) }}</span>
-              </p>
-            </div>
-            <div class="text-right">
-              <div class="mb-1">
+          <!-- Chi tiết đơn hàng -->
+          <div class="divide-y">
+            <!-- Header đơn hàng -->
+            <div class="p-4 flex flex-wrap md:flex-nowrap justify-between items-center bg-gray-50">
+              <div class="w-full md:w-auto grid grid-cols-2 md:flex gap-4 mb-2 md:mb-0">
+                <div>
+                  <p class="text-sm text-gray-500">Mã đơn hàng</p>
+                  <p class="font-medium text-gray-800">#{{ order.orderId }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Ngày đặt</p>
+                  <p class="font-medium text-gray-800">{{ formatDate(order.orderDate) }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Phương thức</p>
+                  <p class="font-medium text-gray-800">{{ order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng' : 'VNPay' }}</p>
+                </div>
+              </div>
+              <div class="w-full md:w-auto flex justify-between md:justify-end items-center gap-4">
                 <span :class="{
                   'px-3 py-1 rounded-full text-sm font-medium': true,
                   'bg-yellow-100 text-yellow-800': order.status === 'PENDING',
-                  'bg-green-100 text-green-800': order.status === 'COMPLETED',
-                  'bg-red-100 text-red-800': order.status === 'CANCELLED'
+                  'bg-blue-100 text-blue-800': order.status === 'PROCESSING',
+                  'bg-purple-100 text-purple-800': order.status === 'SHIPPING',
+                  'bg-green-100 text-green-800': order.status === 'COMPLETED' || order.status === 'PAID' || order.status === 'CONFIRMED',
+                  'bg-red-100 text-red-800': order.status === 'CANCELLED' || order.status === 'PAYMENT_FAILED'
                 }">
                   {{ translateStatus(order.status) }}
                 </span>
               </div>
-              <p class="text-lg font-bold text-blue-600">{{ formatPrice(order.totalAmount) }}</p>
             </div>
-          </div>
 
-          <!-- Chi tiết đơn hàng -->
-          <div class="divide-y">
-            <div v-for="item in order.orderDetails" :key="item.orderDetailId" class="p-4 flex items-center gap-4">
-              <img 
-                :src="item.productImageUrl" 
-                :alt="item.productName"
-                class="w-20 h-20 object-cover rounded-md"
-              >
-              <div class="flex-1">
-                <h3 class="font-medium text-gray-800">{{ item.productName }}</h3>
-                <p class="text-sm text-gray-500">Số lượng: {{ item.quantity }}</p>
-                <p class="text-sm text-gray-500">Đơn giá: {{ formatPrice(item.price) }}</p>
-              </div>
-              <div class="text-right">
-                <p class="font-bold text-gray-800">{{ formatPrice(item.price * item.quantity) }}</p>
+            <!-- Danh sách sản phẩm -->
+            <div class="p-4">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th class="p-2">Sản phẩm</th>
+                      <th class="p-2 text-center">Số lượng</th>
+                      <th class="p-2 text-right">Đơn giá</th>
+                      <th class="p-2 text-right">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="item in order.orderDetails" :key="item.orderDetailId">
+                      <td class="p-2">
+                        <div class="flex items-center gap-3">
+                          <img 
+                            :src="item.productImageUrl" 
+                            :alt="item.productName"
+                            class="w-16 h-16 object-cover rounded"
+                          >
+                          <div>
+                            <h3 class="font-medium text-gray-800">{{ item.productName }}</h3>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="p-2 text-center">{{ item.quantity }}</td>
+                      <td class="p-2 text-right">{{ formatPrice(item.price) }}</td>
+                      <td class="p-2 text-right font-medium">{{ formatPrice(item.price * item.quantity) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
 
-          <!-- Footer đơn hàng -->
-          <div class="p-4 bg-gray-50 border-t">
-            <div class="flex justify-between items-center">
-              <div>
-                <p class="text-sm text-gray-500">Địa chỉ giao hàng:</p>
-                <p class="text-sm font-medium text-gray-800">
-                  {{ order.shippingName }} - {{ order.shippingPhone }}
-                </p>
-                <p class="text-sm text-gray-800">{{ order.shippingAddress }}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm text-gray-500">Tổng tiền:</p>
-                <p class="text-xl font-bold text-blue-600">{{ formatPrice(order.totalAmount) }}</p>
+            <!-- Footer đơn hàng -->
+            <div class="p-4 bg-gray-50">
+              <div class="flex flex-col md:flex-row justify-between gap-4">
+                <!-- Thông tin giao hàng -->
+                <div class="md:w-1/2">
+                  <h4 class="font-medium text-gray-800 mb-2">Thông tin giao hàng</h4>
+                  <div class="text-sm">
+                    <p class="font-medium text-gray-800">{{ order.shippingName }}</p>
+                    <p class="text-gray-600">{{ order.shippingPhone }}</p>
+                    <p class="text-gray-600">{{ order.shippingAddress }}</p>
+                  </div>
+                </div>
+                
+                <!-- Tổng tiền -->
+                <div class="md:w-1/2 md:max-w-xs">
+                  <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-gray-600">Tạm tính:</span>
+                      <span class="font-medium">{{ formatPrice(order.totalAmount) }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                      <span class="text-gray-600">Phí vận chuyển:</span>
+                      <span class="font-medium">{{ formatPrice(0) }}</span>
+                    </div>
+                    <div class="flex justify-between text-base pt-2 border-t">
+                      <span class="font-medium text-gray-800">Tổng cộng:</span>
+                      <span class="font-bold text-blue-600">{{ formatPrice(order.totalAmount) }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -230,7 +270,10 @@ const translateStatus = (status) => {
     'PROCESSING': 'Đang xử lý',
     'SHIPPING': 'Đang giao hàng',
     'COMPLETED': 'Đã hoàn thành',
-    'CANCELLED': 'Đã hủy'
+    'PAID': 'Đã hoàn thành',
+    'CONFIRMED': 'Đã hoàn thành',
+    'CANCELLED': 'Đã hủy',
+    'PAYMENT_FAILED': 'Thanh toán thất bại'
   };
   return statusMap[status] || status;
 };

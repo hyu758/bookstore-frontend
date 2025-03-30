@@ -261,13 +261,10 @@ const fetchProducts = async () => {
       productPagination.value.size
     );
 
-    console.log(data.data.content);
     products.value = data.data.content;
     productPagination.value.totalPages = data.data.totalPages;
     productPagination.value.totalElements = data.data.totalElements;
 
-    // console.log("Dữ liệu sản phẩm:", products.value);
-    // console.log("Thông tin phân trang:", productPagination.value);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách sách:", error);
     products.value = [];

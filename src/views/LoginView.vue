@@ -24,7 +24,6 @@ const login = async () => {
         });
 
         const data = await response.json();
-        console.log(data);
         if (data.error) {
             showError(data.error);
             return;
@@ -49,7 +48,6 @@ const login = async () => {
 };
 onMounted(() => {
     const token = getToken();
-    console.log(token);
     if (token && !isTokenExpired()) {
         router.push('/');
     }

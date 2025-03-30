@@ -409,7 +409,7 @@ const removeFromCart = async (item) => {
       }
     });
     
-    console.log('Xóa sản phẩm response:', response);
+
     
     if (response.ok) {
       // Xóa sản phẩm khỏi danh sách hiện tại
@@ -656,16 +656,15 @@ const fetchUserAddress = async () => {
         'Accept': '*/*'
       }
     });
-    console.log(response);
+
     if (!response.ok) {
       throw new Error('Không thể lấy thông tin người dùng');
     }
     
     const data = await response.json();
-    console.log('Profile data:', data);
     
     if (data.success && data.data) {
-      console.log(data.data.address);
+
       userAddress.value = data.data.address || '';
     } else {
       console.error('Không tìm thấy dữ liệu địa chỉ trong response');
@@ -695,7 +694,6 @@ const fetchCart = async () => {
       }
     });
     const result = await response.json();
-    console.log(result);
     if (result.success) {
       cartItems.value = result.data.cartDetails.map(item => ({
         cartDetailId: item.cartDetailId,
@@ -708,7 +706,6 @@ const fetchCart = async () => {
         author: item.author || '',
         selected: true
       }));
-      console.log(cartItems.value);
     }
 
   } catch (error) {

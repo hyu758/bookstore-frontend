@@ -109,18 +109,16 @@
         },
       });
   
-      console.log("Profile data from API:", response.data);
       if (response.data.success) {
         const userData = response.data.data;
         profile.value = {
           fullName: userData.fullName,
           email: userData.email,
-          phoneNumber: userData.phoneNumber || "", // Đảm bảo có giá trị mặc định
+          phoneNumber: userData.phoneNumber || "",
           address: userData.address || "",
           currentPassword: "",
           newPassword: "",
         };
-        console.log("Mapped profile data:", profile.value);
       } else {
         errorMessage.value = "Không thể lấy thông tin hồ sơ.";
       }
@@ -133,7 +131,6 @@
     }
   };
   
-  // Cập nhật thông tin hồ sơ
   const updateProfile = async () => {
     try {
       const token = sessionStorage.getItem("accessToken");
@@ -143,7 +140,6 @@
         phoneNumber: profile.value.phoneNumber || null, // Đảm bảo gửi null nếu không có giá trị
       };
   
-      console.log("Sending update data:", updateData);
       const response = await axios.put("http://localhost:8080/api/users/profile", updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -151,11 +147,9 @@
         },
       });
   
-      console.log("Update response:", response.data);
       if (response.data.success) {
         successMessage.value = "Cập nhật hồ sơ thành công!";
         errorMessage.value = "";
-        // Làm mới dữ liệu sau khi cập nhật
         await fetchProfile();
       } else {
         errorMessage.value = "Cập nhật hồ sơ thất bại.";
@@ -168,7 +162,6 @@
     }
   };
   
-  // Kiểm tra quyền truy cập khi component được mount
   onMounted(async () => {
     const token = sessionStorage.getItem("accessToken");
     if (!token) {

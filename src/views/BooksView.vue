@@ -164,8 +164,6 @@ const fetchProducts = async () => {
     if (selectedCategories.value.length === 1) {
       searchParams.categoryId = selectedCategories.value[0];
     } else if (selectedCategories.value.length > 1) {
-      // API hiện tại chỉ hỗ trợ một categoryId, nên chúng ta sẽ xử lý trường hợp nhiều danh mục ở client
-      // Trong tương lai, API có thể được cập nhật để hỗ trợ nhiều categoryId
     }
     
     // Thêm lọc theo giá
@@ -175,13 +173,7 @@ const fetchProducts = async () => {
       if (max) searchParams.maxPrice = max;
     }
     
-    // Thêm lọc theo đánh giá (nếu API hỗ trợ)
-    if (ratingFilter.value > 0) {
-      // Hiện tại API không hỗ trợ lọc theo đánh giá, nên chúng ta sẽ xử lý ở client
-      // searchParams.minRating = ratingFilter.value;
-    }
     
-    console.log('Tìm kiếm nâng cao với tham số:', searchParams);
     
     // Gọi API tìm kiếm nâng cao
     const data = await api.advancedSearch(

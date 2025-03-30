@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useNotify } from '@/composables/notify';
 import { useRouter } from 'vue-router';
 
@@ -11,8 +11,51 @@ const errorMessage = ref("");
 const { error: showError, success } = useNotify();
 const router = useRouter();
 
+// Validation rules
+const usernameRules = computed(() => {
+    if (!userName.value) return "Tên đăng nhập không được để trống";
+    if (userName.value.length < 3) return "Tên đăng nhập phải có ít nhất 3 ký tự";
+    if (!/^[a-zA-Z0-9]+$/.test(userName.value)) return "Tên đăng nhập chỉ được chứa chữ cái và số";
+    return "";
+});
+
+const emailRules = computed(() => {
+    if (!email.value) return "Email không được để trống";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) return "Email không hợp lệ";
+    return "";
+});
+
+const fullNameRules = computed(() => {
+    if (!fullName.value) return "Họ và tên không được để trống";
+    if (fullName.value.trim().split(/\s+/).length < 2) return "Họ và tên phải có ít nhất 2 từ";
+    return "";
+});
+
+const passwordRules = computed(() => {
+    if (!password.value) return "Mật khẩu không được để trống";
+    if (password.value.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
+    return "";
+});
+
+const isFormValid = computed(() => {
+    return !usernameRules.value && !emailRules.value && !fullNameRules.value && !passwordRules.value;
+});
+
 const register = async () => {
     errorMessage.value = "";
+    
+    if (!isFormValid.value) {
+        const errors = [
+            usernameRules.value,
+            emailRules.value,
+            fullNameRules.value,
+            passwordRules.value
+        ].filter(error => error);
+        
+        showError(errors[0]);
+        return;
+    }
+
     try {
         const response = await fetch("http://localhost:8080/api/auth/register", {
             method: "POST",
@@ -26,7 +69,6 @@ const register = async () => {
                 fullName: fullName.value,
             }),
         });
-        console.log(response);
         const data = await response.json();
         if (!response.ok){
             throw new Error(data.message || "Đăng ký thất bại, vui lòng thử lại.");
@@ -58,6 +100,7 @@ const register = async () => {
                     <div class="mt-2">
                         <input v-model="userName" type="text" autocomplete="username" required
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600 sm:text-sm" />
+                        <p v-if="usernameRules" class="mt-1 text-sm text-red-600">{{ usernameRules }}</p>
                     </div>
                 </div>
                 <div>
@@ -65,6 +108,7 @@ const register = async () => {
                     <div class="mt-2">
                         <input v-model="email" type="email" autocomplete="email" required
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600 sm:text-sm" />
+                        <p v-if="emailRules" class="mt-1 text-sm text-red-600">{{ emailRules }}</p>
                     </div>
                 </div>
                 <div>
@@ -72,6 +116,7 @@ const register = async () => {
                     <div class="mt-2">
                         <input v-model="fullName" type="text" required
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600 sm:text-sm" />
+                        <p v-if="fullNameRules" class="mt-1 text-sm text-red-600">{{ fullNameRules }}</p>
                     </div>
                 </div>
                 <div>
@@ -79,12 +124,17 @@ const register = async () => {
                     <div class="mt-2">
                         <input v-model="password" type="password" autocomplete="new-password" required
                             class="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600 sm:text-sm" />
+                        <p v-if="passwordRules" class="mt-1 text-sm text-red-600">{{ passwordRules }}</p>
                     </div>
                 </div>
 
                 <div>
                     <button type="submit"
-                        class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline focus:outline-indigo-600">
+                        :disabled="!isFormValid"
+                        :class="[
+                            'flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold text-white shadow focus:outline focus:outline-indigo-600',
+                            isFormValid ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-gray-400 cursor-not-allowed'
+                        ]">
                         Đăng ký
                     </button>
                 </div>

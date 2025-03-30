@@ -4,15 +4,14 @@ import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import { useAuth } from '@/composables/useAuth';
 
-// Khai báo biến reactive
 const isLoggedIn = ref(!!sessionStorage.getItem("accessToken"));
-const isAdmin = ref(false); // Biến để kiểm tra vai trò admin
+const isAdmin = ref(false);
 const router = useRouter();
 const route = useRoute();
 const searchQuery = ref('');
 const cartItems = ref([]);
 const showCartDropdown = ref(false);
-const isCartLoaded = ref(false); // Biến để kiểm tra xem giỏ hàng đã được tải chưa
+const isCartLoaded = ref(false);
 const { logout: authLogout } = useAuth();
 const token = sessionStorage.getItem("accessToken");
 
@@ -32,8 +31,6 @@ const checkUserRole = async () => {
       },
     });
     if (response.data.success) {
-      // Giả sử API trả về role trong response.data.role
-      console.log(response.data.data);
       isAdmin.value = response.data.data === "ADMIN";
       isLoggedIn.value = true;
     } else {
@@ -62,7 +59,7 @@ const fetchCartItems = async () => {
       }
     });
     const result = response.data;
-    console.log(result);
+
     if (result.success) {
       cartItems.value = result.data.cartDetails.map(item => ({
         cartDetailId: item.cartDetailId,
@@ -77,7 +74,6 @@ const fetchCartItems = async () => {
       }));
       isCartLoaded.value = true; // Đánh dấu giỏ hàng đã được tải
     }
-    console.log(cartItems.value);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin giỏ hàng:", error);
   }
@@ -120,38 +116,30 @@ const handleCartMouseEnter = () => {
   }
 };
 
-// Theo dõi thay đổi route để cập nhật giỏ hàng
 watch(route, (newRoute, oldRoute) => {
-  // Chỉ gọi API khi thực sự cần thiết (ví dụ: sau khi thêm/xóa sản phẩm khỏi giỏ hàng)
-  // Kiểm tra xem route có thay đổi từ trang giỏ hàng hoặc trang chi tiết sản phẩm không
   const cartRelatedRoutes = ['/cart', '/checkout'];
   const isFromCartRelated = oldRoute.path && cartRelatedRoutes.some(route => oldRoute.path.includes(route));
   const isToCartRelated = newRoute.path && cartRelatedRoutes.some(route => newRoute.path.includes(route));
   
-  // Chỉ gọi API khi chuyển từ trang liên quan đến giỏ hàng sang trang khác
   if (isLoggedIn.value && !isAdmin.value && isFromCartRelated && !isToCartRelated) {
     isCartLoaded.value = false; // Reset trạng thái để tải lại giỏ hàng khi cần
     fetchCartItems();
   }
 });
 
-// Lắng nghe sự kiện thêm vào giỏ hàng
 const listenToCartEvents = () => {
   window.addEventListener('cart-updated', () => {
-    console.log('Sự kiện cart-updated được kích hoạt');
-    isCartLoaded.value = false; // Reset trạng thái để tải lại giỏ hàng
+    isCartLoaded.value = false;
     fetchCartItems();
   });
 };
 
 watchEffect(() => {
   const newLoginState = !!sessionStorage.getItem("accessToken");
-  // Chỉ gọi API khi trạng thái đăng nhập thay đổi từ chưa đăng nhập sang đã đăng nhập
   if (newLoginState !== isLoggedIn.value) {
     isLoggedIn.value = newLoginState;
     if (isLoggedIn.value) {
       checkUserRole();
-      // Không tải giỏ hàng ngay lập tức, chỉ đánh dấu là chưa được tải
       isCartLoaded.value = false;
     } else {
       isAdmin.value = false;
@@ -163,13 +151,12 @@ watchEffect(() => {
 
 onMounted(() => {
   checkUserRole();
-  // Không tải giỏ hàng ngay lập tức khi component được mount
   listenToCartEvents();
 });
 
 // Hàm đăng xuất
 const logout = () => {
-  authLogout(); // Sử dụng hàm logout từ useAuth
+  authLogout();
   isLoggedIn.value = false;
   isAdmin.value = false;
 };
@@ -179,7 +166,6 @@ const logout = () => {
   <header class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
     <div class="container mx-auto px-6 py-3">
       <div class="flex items-center justify-between">
-        <!-- Logo và tên -->
         <RouterLink to="/" class="flex items-center space-x-3">
           <img class="h-10 w-auto" src="/src/assets/logo.png" alt="Logo" />
           <span class="text-xl font-bold text-gray-800">BookZen</span>
@@ -363,7 +349,6 @@ const logout = () => {
     </div>
   </header>
 
-  <!-- Spacer để tránh content bị che bởi fixed header -->
   <div class="h-16"></div>
 </template>
 

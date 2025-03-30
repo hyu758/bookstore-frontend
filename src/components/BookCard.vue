@@ -11,11 +11,6 @@
         -{{ book.discount }}%
       </div>
 
-      <!-- Badge sách mới -->
-      <div v-if="isNewBook" 
-           class="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-medium">
-        Mới
-      </div>
     </div>
 
     <!-- Thông tin sách -->
@@ -94,13 +89,6 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-// Kiểm tra sách mới (trong vòng 7 ngày)
-const isNewBook = computed(() => {
-  const bookDate = new Date(props.book.createdAt);
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  return bookDate >= sevenDaysAgo;
-});
 
 // Emit event khi click nút thêm vào giỏ
 defineEmits(['addToCart']);

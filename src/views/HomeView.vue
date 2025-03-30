@@ -37,7 +37,7 @@
       </section>
 
       <!-- Sách bán chạy -->
-      <section class="mb-12">
+      <section class="mb-12" id="best-sellers">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Sách bán chạy</h2>
           <button 
@@ -59,7 +59,7 @@
       </section>
 
       <!-- Sách mới -->
-      <section class="mb-12">
+      <section class="mb-12" id="new-books">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-gray-800">Sách mới</h2>
           <button 
@@ -132,13 +132,6 @@ const fetchNewProducts = async () => {
   }
 };
 
-// Format giá tiền
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(price);
-};
 
 // Lấy icon cho danh mục
 const getCategoryIcon = (categoryName) => {

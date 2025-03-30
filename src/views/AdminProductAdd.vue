@@ -296,7 +296,7 @@
   // Lấy danh sách danh mục từ API
   const fetchCategories = async () => {
     try {
-      const response = await api.fetchCategories(0, 100); // Lấy tất cả danh mục
+      const response = await api.fetchCategories(0, 100);
       categories.value = response.content;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách danh mục:", error);
@@ -329,19 +329,13 @@
   
   // Xử lý click vào danh mục
   const handleCategoryClick = (id) => {
-    console.log("Clicking category:", id);
     const index = selectedCategoryIds.value.findIndex(catId => catId === id);
     if (index === -1) {
-      // Nếu chưa có trong mảng thì thêm vào
       selectedCategoryIds.value.push(id);
     } else {
-      // Nếu đã có trong mảng thì xóa đi
       selectedCategoryIds.value.splice(index, 1);
     }
-    // Cập nhật product.categoryIds
     product.value.categoryIds = [...selectedCategoryIds.value];
-    console.log("Selected categories after change:", selectedCategoryIds.value);
-    // Để đảm bảo sự kiện không nổi bọt lên cha
     event.stopPropagation();
   };
   

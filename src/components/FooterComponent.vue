@@ -29,11 +29,10 @@
         <div>
           <h3 class="text-white text-lg font-semibold mb-4">Danh Mục</h3>
           <ul class="space-y-2">
-            <li><a href="#" class="hover:text-white transition-colors">Sách Mới</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Sách Bán Chạy</a></li>
+            <li><a href="#new-books" class="hover:text-white transition-colors">Sách Mới</a></li>
+            <li><a href="#best-sellers" class="hover:text-white transition-colors">Sách Bán Chạy</a></li>
             <li><a href="#" class="hover:text-white transition-colors">Sách Giảm Giá</a></li>
             <li><a href="#" class="hover:text-white transition-colors">Sách Nước Ngoài</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Văn Phòng Phẩm</a></li>
           </ul>
         </div>
 

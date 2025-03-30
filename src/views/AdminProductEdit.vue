@@ -341,10 +341,11 @@ const fetchProduct = async () => {
       publisher: data.publisher || '',
       publicationYear: data.publicationYear || new Date().getFullYear(),
       pageCount: data.pageCount || 0,
-      categoryIds: data.categories?.map(c => c.categoryId) || [],
+      categoryIds: data.categoryIds || [],
       imageUrls: [],
       isbn: data.isbn || ''
     };
+
 
     // Lấy danh sách ảnh của sản phẩm
     await fetchProductImages();
@@ -436,7 +437,6 @@ const convertFileToBase64 = (file) => {
 
 // Đánh dấu ảnh để xóa (không xóa ngay)
 const markImageForDeletion = (imageId, index) => {
-  // Thêm ID ảnh vào danh sách cần xóa
   imagesToDelete.value.push(imageId);
   
   // Ẩn ảnh khỏi giao diện (không xóa khỏi mảng existingImages)
@@ -480,12 +480,17 @@ const handleSubmit = async () => {
         await api.deleteProductImage(imageId);
       } catch (err) {
         console.error(`Lỗi khi xóa ảnh ${imageId}:`, err);
-        // Tiếp tục xóa các ảnh khác ngay cả khi có lỗi
+
       }
     }
     
-    // Cập nhật danh sách ảnh mới vào product
-    product.value.imageUrls = newImages.value;
+    // Lấy URL của các ảnh cũ chưa bị xóa
+    const remainingImages = existingImages.value
+      .filter(img => !imagesToDelete.value.includes(img.productImageId))
+      .map(img => img.imageURL);
+    
+    // Cập nhật danh sách ảnh vào product (kết hợp ảnh cũ và mới)
+    product.value.imageUrls = [...remainingImages, ...newImages.value];
     
     // Cập nhật thông tin sản phẩm
     await api.updateProduct(productId.value, product.value);

@@ -75,75 +75,7 @@
           </div>
         </div>
   
-        <!-- User Registration Stats -->
-        <div class="bg-white p-4 rounded-lg shadow mb-6">
-          <h3 class="text-gray-600 mb-4">Thống kê người dùng</h3>
-          <div v-if="isLoadingUsers" class="h-64 flex items-center justify-center">
-            <div class="text-gray-500">Đang tải dữ liệu...</div>
-          </div>
-          <div v-else-if="!userStats.length" class="h-64 flex items-center justify-center">
-            <div class="text-gray-500">Không có dữ liệu trong khoảng thời gian này</div>
-          </div>
-          <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- User Stats Chart -->
-            <div class="h-80">
-              <Line :data="userChartData" :options="userChartOptions" />
-            </div>
-            
-            <!-- User Stats Summary -->
-            <div class="p-4">
-              <div class="space-y-6">
-                <div>
-                  <h4 class="text-lg font-medium text-gray-900">Tổng quan</h4>
-                  <div class="mt-3 grid grid-cols-1 gap-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                      <div class="text-sm text-gray-500">Tổng số đăng ký</div>
-                      <div class="text-2xl font-bold text-gray-900">
-                        {{ totalRegistrations }}
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div class="bg-green-50 p-4 rounded-lg">
-                        <div class="text-sm text-green-600">Đang hoạt động</div>
-                        <div class="text-2xl font-bold text-green-700">
-                          {{ totalActiveUsers }}
-                        </div>
-                      </div>
-                      <div class="bg-red-50 p-4 rounded-lg">
-                        <div class="text-sm text-red-600">Bị khóa</div>
-                        <div class="text-2xl font-bold text-red-700">
-                          {{ totalInactiveUsers }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 class="text-lg font-medium text-gray-900">Tỷ lệ hoạt động</h4>
-                  <div class="mt-3">
-                    <div class="relative pt-1">
-                      <div class="flex mb-2 items-center justify-between">
-                        <div>
-                          <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-200">
-                            {{ activeRate }}%
-                          </span>
-                        </div>
-                      </div>
-                      <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-200">
-                        <div 
-                          :style="{ width: activeRate + '%' }" 
-                          class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-  
+      
         <!-- Top Products -->
         <div class="bg-white p-4 rounded-lg shadow mb-6">
           <h3 class="text-gray-600 mb-4">Top 10 sản phẩm bán chạy</h3>
@@ -187,20 +119,7 @@
             </table>
           </div>
         </div>
-  
-        <!-- Other charts -->
-        <div class="grid grid-cols-2 gap-6">
-          <!-- Chart 1 -->
-          <div class="bg-white p-4 rounded-lg shadow">
-            <h3 class="text-gray-600 mb-4">Customers with highest total spend</h3>
-            <div class="h-64 bg-blue-200 rounded"></div> <!-- Placeholder cho biểu đồ -->
-          </div>
-          <!-- Chart 2 -->
-          <div class="bg-white p-4 rounded-lg shadow">
-            <h3 class="text-gray-600 mb-4">Customers with most purchases</h3>
-            <div class="h-64 bg-red-200 rounded"></div> <!-- Placeholder cho biểu đồ -->
-          </div>
-        </div>
+
       </div>
     </div>
   </template>
@@ -316,22 +235,25 @@
   });
   
   const chartData = computed(() => {
+    // Sắp xếp dữ liệu theo thời gian tăng dần
+    const sortedData = [...revenueData.value].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
     return {
-      labels: revenueData.value.map(item => {
+      labels: sortedData.map(item => {
         const date = new Date(item.date);
         return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
       }),
       datasets: [
         {
           label: 'Doanh thu',
-          data: revenueData.value.map(item => item.totalRevenue),
+          data: sortedData.map(item => item.totalRevenue),
           borderColor: 'rgb(75, 192, 192)',
           tension: 0.1,
           fill: false
         },
         {
           label: 'Số đơn hàng',
-          data: revenueData.value.map(item => item.totalOrders),
+          data: sortedData.map(item => item.totalOrders),
           borderColor: 'rgb(255, 99, 132)',
           tension: 0.1,
           fill: false,
@@ -363,29 +285,32 @@
   });
   
   const userChartData = computed(() => {
+    // Sắp xếp dữ liệu theo thời gian tăng dần
+    const sortedData = [...userStats.value].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
     return {
-      labels: userStats.value.map(item => {
+      labels: sortedData.map(item => {
         const date = new Date(item.date);
         return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
       }),
       datasets: [
         {
           label: 'Tổng đăng ký',
-          data: userStats.value.map(item => item.totalRegistrations),
+          data: sortedData.map(item => item.totalRegistrations),
           borderColor: 'rgb(59, 130, 246)', // blue
           tension: 0.1,
           fill: false
         },
         {
           label: 'Đang hoạt động',
-          data: userStats.value.map(item => item.activeUsers),
+          data: sortedData.map(item => item.activeUsers),
           borderColor: 'rgb(34, 197, 94)', // green
           tension: 0.1,
           fill: false
         },
         {
           label: 'Bị khóa',
-          data: userStats.value.map(item => item.inactiveUsers),
+          data: sortedData.map(item => item.inactiveUsers),
           borderColor: 'rgb(239, 68, 68)', // red
           tension: 0.1,
           fill: false
