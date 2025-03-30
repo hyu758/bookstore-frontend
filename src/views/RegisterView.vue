@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useNotify } from '@/composables/notify';
 import { useRouter } from 'vue-router';
 
+const {getToken} = useAuth();
 const userName = ref("");
 const email = ref("");
 const password = ref("");

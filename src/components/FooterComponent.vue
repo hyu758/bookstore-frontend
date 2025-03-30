@@ -90,9 +90,7 @@
 </template>
 
 <script setup>
-// Không cần thêm logic JavaScript cho footer
 </script>
 
 <style scoped>
-/* Các style bổ sung nếu cần */
 </style>

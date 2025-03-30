@@ -46,12 +46,7 @@ const login = async () => {
         showError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
     }
 };
-onMounted(() => {
-    const token = getToken();
-    if (token && !isTokenExpired()) {
-        router.push('/');
-    }
-});
+
 </script>
 
 <template>

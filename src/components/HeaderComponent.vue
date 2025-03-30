@@ -84,12 +84,10 @@ const cartItemCount = computed(() => {
   return cartItems.value.reduce((total, item) => total + item.quantity, 0);
 });
 
-// Tính tổng tiền trong giỏ hàng
 const cartTotal = computed(() => {
   return cartItems.value.reduce((total, item) => total + (item.price * item.quantity), 0);
 });
 
-// Format giá tiền
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -107,10 +105,9 @@ const handleSearch = () => {
   }
 };
 
-// Xử lý hiển thị dropdown giỏ hàng
+
 const handleCartMouseEnter = () => {
   showCartDropdown.value = true;
-  // Chỉ tải dữ liệu giỏ hàng khi người dùng hover vào icon giỏ hàng
   if (isLoggedIn.value && !isAdmin.value && !isCartLoaded.value) {
     fetchCartItems();
   }
@@ -154,7 +151,6 @@ onMounted(() => {
   listenToCartEvents();
 });
 
-// Hàm đăng xuất
 const logout = () => {
   authLogout();
   isLoggedIn.value = false;
@@ -259,7 +255,6 @@ const logout = () => {
                   @mouseenter="handleCartMouseEnter"
                 >
                   <span class="material-icons">shopping_cart</span>
-                  <!-- Badge số lượng trong giỏ hàng -->
                   <span 
                     v-if="cartItemCount > 0"
                     class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
@@ -357,18 +352,15 @@ const logout = () => {
   font-size: 24px;
 }
 
-/* Hiệu ứng hover cho các icon */
 .text-gray-600:hover {
   transform: scale(1.1);
   transition: transform 0.2s ease-in-out;
 }
 
-/* Styling cho dropdown giỏ hàng */
 .cart-dropdown {
   position: relative;
 }
 
-/* Thêm thanh cuộn cho dropdown giỏ hàng */
 .cart-dropdown .max-h-64 {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e0 #f7fafc;
@@ -388,7 +380,6 @@ const logout = () => {
   border-radius: 3px;
 }
 
-/* Đảm bảo dropdown không bị ẩn khi di chuột vào */
 .cart-dropdown-menu {
   display: block;
 }

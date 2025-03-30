@@ -7,6 +7,7 @@ import AdminProductAdd from '../views/AdminProductAdd.vue'
 import AdminProductEdit from '../views/AdminProductEdit.vue'
 import AdminUserView from '../views/AdminUserView.vue'
 import AdminUserDetailView from '../views/AdminUserDetailView.vue'
+import { useAuth } from '@/composables/useAuth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,16 +21,19 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
+      meta: { requiresAuth: false }
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('../views/RegisterView.vue'),
+      meta: { requiresAuth: false }
     },
     {
       path: '/admin',
       name: 'admin',
       component: () => import('../views/AdminDashboard.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/admin/products',
@@ -79,7 +83,8 @@ const router = createRouter({
     {
       path: '/cart',
       name: 'cart',
-      component: () => import('../views/CartView.vue')
+      component: () => import('../views/CartView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: false }
     },
     {
       path: '/book/:id',
@@ -100,7 +105,7 @@ const router = createRouter({
       path: '/orders/history',
       name: 'orderHistory',
       component: () => import('@/views/OrderHistory.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: false }
     },
     {
       path: '/payment-success',
@@ -119,8 +124,51 @@ const router = createRouter({
       name: 'AdminOrders',
       component: () => import('../views/AdminOrderView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue')
     }
   ],
 })
+
+// Thêm navigation guard
+router.beforeEach(async (to, from, next) => {
+  const { getToken, checkAdminRole } = useAuth();
+  const token = getToken();
+
+  // Kiểm tra requiresAuth
+  if (to.meta.requiresAuth && !token) {
+    next('/login');
+    return;
+  }
+
+  // Kiểm tra requiresAdmin
+  if (to.meta.requiresAdmin) {
+    const isAdmin = await checkAdminRole();
+    if (!isAdmin) {
+      next('/');
+      return;
+    }
+  }
+
+  // Chặn admin truy cập các trang user
+  if (to.meta.requiresAdmin === false) {
+    const isAdmin = await checkAdminRole();
+    if (isAdmin) {
+      next('/admin');
+      return;
+    }
+  }
+  if (to.meta.requiresAuth === false) {
+    if (token) {
+      next('/');
+      return;
+    }
+  }
+
+  next();
+});
 
 export default router
