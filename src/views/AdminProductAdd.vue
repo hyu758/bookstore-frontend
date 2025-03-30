@@ -240,11 +240,12 @@
             <div class="mt-6 flex justify-end">
               <button
                 @click="createProduct"
-                class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2"
-                :disabled="!product.name || !product.author || selectedCategoryIds.length === 0"
+                :disabled="!product.name || !product.author || selectedCategoryIds.length === 0 || isSubmitting"
+                class="relative bg-blue-600 text-white px-6 py-2.5 rounded-lg transition-all duration-200 transform active:scale-95 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:active:scale-100 hover:bg-blue-700 flex items-center space-x-2 min-w-[120px] justify-center shadow-lg hover:shadow-blue-500/30"
               >
-                <span class="material-icons">save</span>
-                <span>Lưu sách</span>
+                <span v-if="isSubmitting" class="material-icons animate-spin">sync</span>
+                <span v-else class="material-icons">save</span>
+                <span>{{ isSubmitting ? 'Đang lưu...' : 'Lưu sách' }}</span>
               </button>
             </div>
           </div>
@@ -292,6 +293,9 @@
   const maxFileSize = 30 * 1024 * 1024; // 30MB
   const maxFiles = 5; // Số lượng ảnh tối đa
   const acceptedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  
+  // Thêm state isSubmitting
+  const isSubmitting = ref(false);
   
   // Lấy danh sách danh mục từ API
   const fetchCategories = async () => {
@@ -401,22 +405,27 @@
     product.value.imageUrls.splice(index, 1);
   };
   
-  // Tạo sản phẩm mới
+  // Cập nhật hàm createProduct
   const createProduct = async () => {
+    if (isSubmitting.value) return; // Prevent double submit
+    
     try {
-      // Cập nhật categoryIds và tính realPrice
-      product.value.categoryIds = selectedCategoryIds.value;
-      product.value.realPrice = product.value.price * (1 - (product.value.discount || 0) / 100);
-  
-      // Gọi API tạo sản phẩm
-      await api.createProduct(product.value);
-      success("Thêm sách thành công!");
-      // Đợi 1 giây để hiển thị thông báo trước khi chuyển trang
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push("/admin/products");
+        isSubmitting.value = true;
+        // Cập nhật categoryIds và tính realPrice
+        product.value.categoryIds = selectedCategoryIds.value;
+        product.value.realPrice = product.value.price * (1 - (product.value.discount || 0) / 100);
+
+        // Gọi API tạo sản phẩm
+        await api.createProduct(product.value);
+        success("Thêm sách thành công!");
+        // Đợi 1 giây để hiển thị thông báo trước khi chuyển trang
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        router.push("/admin/products");
     } catch (error) {
-      console.error("Lỗi khi thêm sách:", error);
-      showError("Thêm sách thất bại! " + (error.response?.data?.message || error.message));
+        console.error("Lỗi khi thêm sách:", error);
+        showError("Thêm sách thất bại! " + (error.response?.data?.message || error.message));
+    } finally {
+        isSubmitting.value = false;
     }
   };
   
@@ -452,5 +461,26 @@
   /* Hiệu ứng hover cho vùng kéo thả */
   .hover\:border-blue-400:hover {
     border-color: #60a5fa;
+  }
+  
+  .shadow-lg {
+    --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+    box-shadow: var(--tw-shadow);
+  }
+  
+  .hover\:shadow-blue-500\/30:hover {
+    --tw-shadow-color: rgb(59 130 246 / 0.3);
+    --tw-shadow: var(--tw-shadow-colored);
+  }
+  
+  .active\:scale-95:active {
+    --tw-scale-x: .95;
+    --tw-scale-y: .95;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+  
+  .transform {
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
   </style>

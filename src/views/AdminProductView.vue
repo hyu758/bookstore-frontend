@@ -33,7 +33,7 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.categoryId }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.name }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button @click="deleteCategory(category.id)"
+                    <button @click="deleteCategory(category.categoryId)"
                       class="text-red-600 hover:text-red-800 transition duration-150 flex items-center space-x-1 ml-auto">
                       <span class="material-icons text-sm">delete</span>
                       <span>Xóa</span>
@@ -188,10 +188,12 @@ import AdminSideBar from "@/components/AdminSideBar.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { useAuth } from "@/composables/useAuth";
 import { useApi } from "@/composables/useApi";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
 const { checkAdminRole } = useAuth();
 const api = useApi();
+const toast = useToast();
 
 const products = ref([]);
 const categories = ref([]);
@@ -220,6 +222,20 @@ const productPagination = ref({
   size: 10
 });
 
+// Hàm hiển thị thông báo thành công
+const showSuccess = (message) => {
+  toast.success(message, {
+    timeout: 2000
+  });
+};
+
+// Hàm hiển thị thông báo lỗi
+const showError = (message) => {
+  toast.error(message, {
+    timeout: 3000
+  });
+};
+
 // Lấy danh sách danh mục từ API với phân trang
 const fetchCategories = async () => {
   try {
@@ -242,10 +258,13 @@ const deleteCategory = async (id) => {
     message: 'Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác.',
     callback: async () => {
       try {
+        console.log(id);
         await api.deleteCategory(id);
+        showSuccess('Xóa danh mục thành công!');
         fetchCategories();
       } catch (error) {
         console.error("Lỗi khi xóa danh mục:", error);
+        showError('Xóa danh mục thất bại: ' + error.message);
       }
     },
     type: 'category'
@@ -302,9 +321,11 @@ const deleteProduct = async (id) => {
     callback: async () => {
       try {
         await api.deleteProduct(id);
+        showSuccess('Xóa sách thành công!');
         fetchProducts();
       } catch (error) {
         console.error("Lỗi khi xóa sách:", error);
+        showError('Xóa sách thất bại: ' + error.message);
       }
     },
     type: 'product'

@@ -188,7 +188,6 @@
                 v-for="(image, index) in existingImages"
                 :key="image.productImageId"
                 class="relative group"
-                v-show="!image.markedForDeletion"
               >
                 <img
                   :src="image.imageURL"
@@ -229,7 +228,7 @@
                 <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                   <button
                     type="button"
-                    @click="unmarkImageForDeletion(image.productImageId, index)"
+                    @click="unmarkImageForDeletion(image.productImageId)"
                     class="text-white bg-green-600 p-2 rounded-full hover:bg-green-700 transition-colors"
                   >
                     <span class="material-icons">restore</span>
@@ -301,7 +300,7 @@ const error = ref('');
 const categories = ref([]);
 const existingImages = ref([]);
 const newImages = ref([]);
-const imagesToDelete = ref([]); // Mảng lưu ID của các ảnh cần xóa
+const imagesToDelete = ref([]);
 const product = ref({
   name: '',
   description: '',
@@ -386,31 +385,28 @@ const handleFileDrop = (event) => {
   processFiles(files);
 };
 
-// Cập nhật hàm handleFileUpload để sử dụng hàm chung
 const handleFileUpload = (event) => {
   const files = Array.from(event.target.files);
   processFiles(files);
 };
 
-// Hàm xử lý chung cho cả kéo thả và chọn file
 const processFiles = async (files) => {
   // Tính tổng số ảnh (ảnh hiện có - ảnh sẽ xóa + ảnh mới)
   const totalImages = existingImages.value.length - imagesToDelete.value.length + newImages.value.length + files.length;
   
-  // Kiểm tra số lượng file
+
   if (totalImages > maxFiles) {
     showError(`Bạn chỉ có thể upload tối đa ${maxFiles} ảnh`);
     return;
   }
 
   for (const file of files) {
-    // Kiểm tra loại file
+
     if (!acceptedFileTypes.includes(file.type)) {
       showError(`File ${file.name} không phải là ảnh hợp lệ`);
       continue;
     }
 
-    // Kiểm tra kích thước file
     if (file.size > maxFileSize) {
       showError(`File ${file.name} vượt quá kích thước cho phép (30MB)`);
       continue;
@@ -435,29 +431,20 @@ const convertFileToBase64 = (file) => {
   });
 };
 
-// Đánh dấu ảnh để xóa (không xóa ngay)
+
 const markImageForDeletion = (imageId, index) => {
+  existingImages.value.splice(index, 1);
   imagesToDelete.value.push(imageId);
-  
-  // Ẩn ảnh khỏi giao diện (không xóa khỏi mảng existingImages)
-  const image = existingImages.value[index];
-  image.markedForDeletion = true;
-  
-  // Thông báo
-  success('Đã đánh dấu ảnh để xóa. Các thay đổi sẽ được áp dụng khi bạn lưu.');
+  success('Đã xóa ảnh. Các thay đổi sẽ được áp dụng khi bạn lưu.');
 };
 
 // Hủy đánh dấu xóa ảnh
-const unmarkImageForDeletion = (imageId, index) => {
+const unmarkImageForDeletion = (imageId) => {
   // Xóa ID ảnh khỏi danh sách cần xóa
   const deleteIndex = imagesToDelete.value.indexOf(imageId);
   if (deleteIndex !== -1) {
     imagesToDelete.value.splice(deleteIndex, 1);
   }
-  
-  // Hiển thị lại ảnh trên giao diện
-  const image = existingImages.value[index];
-  image.markedForDeletion = false;
   
   // Thông báo
   success('Đã hủy đánh dấu xóa ảnh.');
@@ -468,13 +455,12 @@ const removeNewImage = (index) => {
   newImages.value.splice(index, 1);
 };
 
-// Xử lý submit form
+
 const handleSubmit = async () => {
   try {
     isSubmitting.value = true;
     error.value = '';
     
-    // Xóa các ảnh đã đánh dấu
     for (const imageId of imagesToDelete.value) {
       try {
         await api.deleteProductImage(imageId);
@@ -489,10 +475,7 @@ const handleSubmit = async () => {
       .filter(img => !imagesToDelete.value.includes(img.productImageId))
       .map(img => img.imageURL);
     
-    // Cập nhật danh sách ảnh vào product (kết hợp ảnh cũ và mới)
     product.value.imageUrls = [...remainingImages, ...newImages.value];
-    
-    // Cập nhật thông tin sản phẩm
     await api.updateProduct(productId.value, product.value);
     
     success('Cập nhật sản phẩm thành công!');
@@ -516,7 +499,7 @@ onMounted(async () => {
   font-size: 24px;
 }
 
-/* Styles cho khu vực kéo thả */
+
 .border-dashed {
   border-style: dashed;
 }
@@ -525,7 +508,7 @@ onMounted(async () => {
   border-width: 2px;
 }
 
-/* Hiệu ứng hover cho vùng kéo thả */
+
 .hover\:border-blue-400:hover {
   border-color: #60a5fa;
 }

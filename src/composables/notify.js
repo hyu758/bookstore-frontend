@@ -5,10 +5,10 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 const toast = useToast();
 
 export const useNotify = () => {
-  const notify = (message, timeout = 3000, type = 'info') => {
+  const notify = (message, timeout = 1000, type = 'info') => {
     const options = {
       timeout,
-      position: 'top-right',
+      position: 'bottom-right',
       closeOnClick: true,
       pauseOnFocusLoss: true,
       pauseOnHover: true,

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuth } from './useAuth';
 
 const API_URL = 'http://localhost:8080/api';
-
+const {getToken} = useAuth();
 export const useApi = () => {
   const { getAuthHeaders } = useAuth();
 
@@ -23,7 +23,7 @@ export const useApi = () => {
       const response = await fetch(`${API_URL}/categories/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -57,7 +57,7 @@ export const useApi = () => {
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -231,7 +231,7 @@ export const useApi = () => {
       const response = await fetch(`${API_URL}/products/images/${imageId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -253,7 +253,7 @@ export const useApi = () => {
       const response = await fetch(`${API_URL}/products/${productId}/images`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -271,15 +271,8 @@ export const useApi = () => {
   };
 
   // Tìm kiếm nâng cao
-  const advancedSearch = async (searchParams, page = 0, size = 10, sort = 'name') => {
+  const advancedSearch = async (searchParams, page = 0, size = 8, sortBy = 'name', sortDir = 'asc') => {
     try {
-      // Xây dựng đối tượng pageable
-      const pageable = {
-        page,
-        size,
-        sort: Array.isArray(sort) ? sort : [sort]
-      };
-
       // Xây dựng query params
       const params = new URLSearchParams();
       
@@ -292,8 +285,18 @@ export const useApi = () => {
       if (searchParams.year) params.append('year', searchParams.year);
       if (searchParams.categoryId) params.append('categoryId', searchParams.categoryId);
       
-      // Thêm pageable
-      params.append('pageable', JSON.stringify(pageable));
+      // Thêm pageable params
+      params.append('page', page);
+      params.append('size', size);
+
+      // Thêm tham số sắp xếp
+      if (sortBy === 'bestseller' || sortBy === 'newest') {
+        params.append('sortBy', sortBy);
+      } else {
+        params.append('sortBy', sortBy);
+        params.append('sortDir', sortDir);
+      }
+
 
       const response = await fetch(`${API_URL}/products/search/advanced?${params.toString()}`, {
         headers: {
@@ -319,7 +322,7 @@ export const useApi = () => {
       const url = `http://localhost:8080/api/admin/users?page=${page}&size=${size}&sort=${sort}${queryParams ? '&' + queryParams : ''}`;
       const response = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -339,7 +342,7 @@ export const useApi = () => {
     try {
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           Accept: "*/*"
         }
       });
@@ -361,7 +364,7 @@ export const useApi = () => {
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ active: isActive })
@@ -384,7 +387,7 @@ export const useApi = () => {
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${getToken()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ role: role })

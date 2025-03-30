@@ -8,10 +8,10 @@
       <div class="space-y-2">
         <label class="flex items-center">
           <input 
-            type="checkbox" 
+            type="radio" 
             :checked="selectedCategories.length === 0"
-            @change="toggleAllCategories"
-            class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            @change="clearCategory"
+            class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500"
           >
           <span class="ml-2 text-gray-700">Tất cả</span>
         </label>
@@ -21,10 +21,11 @@
           class="flex items-center"
         >
           <input 
-            type="checkbox" 
+            type="radio" 
             :value="category.categoryId"
-            v-model="selectedCategoriesLocal"
-            class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            :checked="selectedCategories[0] === category.categoryId"
+            @change="selectCategory(category.categoryId)"
+            class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500"
           >
           <span class="ml-2 text-gray-700">{{ category.name }}</span>
         </label>
@@ -82,48 +83,7 @@
         </label>
       </div>
     </div>
-    
-    <!-- Đánh giá -->
-    <div class="mb-6">
-      <h3 class="font-semibold text-gray-700 mb-3">Đánh giá</h3>
-      <div class="space-y-2">
-        <label class="flex items-center">
-          <input 
-            type="radio" 
-            v-model="ratingFilterLocal" 
-            value="0"
-            class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-          >
-          <span class="ml-2 text-gray-700">Tất cả</span>
-        </label>
-        <label 
-          v-for="rating in [4, 3, 2, 1]" 
-          :key="rating"
-          class="flex items-center"
-        >
-          <input 
-            type="radio" 
-            v-model="ratingFilterLocal" 
-            :value="rating"
-            class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-          >
-          <div class="ml-2 flex items-center">
-            <div class="flex">
-              <span 
-                v-for="i in 5" 
-                :key="i"
-                class="material-icons text-sm"
-                :class="i <= rating ? 'text-yellow-400' : 'text-gray-300'"
-              >
-                star
-              </span>
-            </div>
-            <span class="ml-1 text-gray-700">{{ rating }}+ sao</span>
-          </div>
-        </label>
-      </div>
-    </div>
-    
+
     <!-- Nút áp dụng bộ lọc -->
     <button 
       @click="applyFilters"
@@ -150,10 +110,6 @@ const props = defineProps({
     type: String,
     required: true
   },
-  ratingFilter: {
-    type: Number,
-    required: true
-  }
 });
 
 const emit = defineEmits(['update:selectedCategories', 'update:priceRange', 'update:ratingFilter', 'apply-filters']);
@@ -185,15 +141,14 @@ watch(priceRangeLocal, (newVal) => {
   emit('update:priceRange', newVal);
 });
 
-watch(ratingFilterLocal, (newVal) => {
-  emit('update:ratingFilter', newVal);
-});
 
 // Methods
-const toggleAllCategories = (event) => {
-  if (event.target.checked) {
-    selectedCategoriesLocal.value = [];
-  }
+const clearCategory = () => {
+  selectedCategoriesLocal.value = [];
+};
+
+const selectCategory = (categoryId) => {
+  selectedCategoriesLocal.value = [categoryId];
 };
 
 const applyFilters = () => {
