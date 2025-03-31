@@ -101,12 +101,12 @@
                       <span class="material-icons text-sm">visibility</span>
                       <span>Chi tiết</span>
                     </button>
-                    <button v-if="user.role !== 'ADMIN' || currentUserIsAdmin"
+                    <!-- <button v-if="user.role !== 'ADMIN' || currentUserIsAdmin"
                       @click="toggleUserRole(user)"
                       class="text-purple-600 hover:text-purple-800 transition duration-150 flex items-center space-x-1">
                       <span class="material-icons text-sm">manage_accounts</span>
                       <span>{{ user.role === 'USER' ? 'Nâng quyền' : 'Hạ quyền' }}</span>
-                    </button>
+                    </button> -->
                     <button @click="toggleUserStatus(user)"
                       :class="user.active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'"
                       class="transition duration-150 flex items-center space-x-1">
@@ -313,27 +313,42 @@ const toggleUserStatus = (user) => {
 };
 
 // Thay đổi vai trò người dùng
-const toggleUserRole = (user) => {
-  const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
-  const action = newRole === 'ADMIN' ? 'nâng cấp lên Admin' : 'hạ xuống User thường';
+// const toggleUserRole = (user) => {
+//   const newRole = user.role === 'USER' ? 'ADMIN' : 'USER';
+//   const action = newRole === 'ADMIN' ? 'nâng cấp lên Admin' : 'hạ xuống User thường';
   
-  confirmDialogConfig.value = {
-    title: `Xác nhận ${action}`,
-    message: `Bạn có chắc chắn muốn ${action} cho người dùng "${user.fullName}" không?`,
-    callback: async () => {
-      try {
-        await api.updateUserRole(user.userId, newRole);
-        user.role = newRole;
-        success(`Đã ${action} thành công`);
-      } catch (error) {
-        console.error(`Lỗi khi ${action}:`, error);
-        showError(`Không thể ${action}`);
-      }
-    }
-  };
+//   confirmDialogConfig.value = {
+//     title: `Xác nhận ${action}`,
+//     message: `Bạn có chắc chắn muốn ${action} cho người dùng "${user.fullName}" không?`,
+//     callback: async () => {
+//       try {
+//         const token = sessionStorage.getItem("accessToken");
+//         const response = await fetch(`http://localhost:8080/api/admin/users/${user.userId}/role`, {
+//           method: 'PUT',
+//           headers: {
+//             'Authorization': `Bearer ${token}`,
+//             'Content-Type': 'application/json'
+//           },
+//           body: JSON.stringify({
+//             role: newRole
+//           })
+//         });
+
+//         if (!response.ok) {
+//           throw new Error(`Không thể ${action}`);
+//         }
+
+//         user.role = newRole;
+//         success(`Đã ${action} thành công`);
+//       } catch (error) {
+//         console.error(`Lỗi khi ${action}:`, error);
+//         showError(`Không thể ${action}`);
+//       }
+//     }
+//   };
   
-  showConfirmDialog.value = true;
-};
+//   showConfirmDialog.value = true;
+// };
 
 // Hàm điều hướng trang
 const changePage = (page) => {

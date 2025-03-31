@@ -9,6 +9,7 @@ import AdminUserView from '../views/AdminUserView.vue'
 import AdminUserDetailView from '../views/AdminUserDetailView.vue'
 import { useAuth } from '@/composables/useAuth'
 
+const { getToken, checkAdminRole } = useAuth();
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -105,7 +106,7 @@ const router = createRouter({
       path: '/orders/history',
       name: 'orderHistory',
       component: () => import('@/views/OrderHistory.vue'),
-      meta: { requiresAuth: true, requiresAdmin: false }
+      meta: { requiresAuth: true }
     },
     {
       path: '/payment-success',
@@ -123,7 +124,7 @@ const router = createRouter({
       path: '/admin/orders',
       name: 'AdminOrders',
       component: () => import('../views/AdminOrderView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true }
+      meta: { requiresAuth: true}
     },
     {
       path: '/:pathMatch(.*)*',
@@ -133,18 +134,18 @@ const router = createRouter({
   ],
 })
 
-// Thêm navigation guard
 router.beforeEach(async (to, from, next) => {
-  const { getToken, checkAdminRole } = useAuth();
   const token = getToken();
 
-  // Kiểm tra requiresAuth
+  console.log('Navigation to:', to.path);
+  console.log('Token:', token);
+  console.log('Meta:', to.meta);
+
   if (to.meta.requiresAuth && !token) {
     next('/login');
     return;
   }
 
-  // Kiểm tra requiresAdmin
   if (to.meta.requiresAdmin) {
     const isAdmin = await checkAdminRole();
     if (!isAdmin) {
@@ -153,22 +154,13 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // Chặn admin truy cập các trang user
-  if (to.meta.requiresAdmin === false) {
-    const isAdmin = await checkAdminRole();
-    if (isAdmin) {
-      next('/admin');
-      return;
-    }
-  }
-  if (to.meta.requiresAuth === false) {
-    if (token) {
-      next('/');
-      return;
-    }
+  if (to.meta.requiresAuth === false && token) {
+    next('/');
+    return;
   }
 
   next();
 });
 
 export default router
+
